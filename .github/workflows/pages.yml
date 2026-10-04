@@ -1,8 +1,6 @@
 name: Deploy landing page
+# Manual only for now: run it from the Actions tab when you're ready to go public.
 on:
-  push:
-    branches: [main]
-    paths: ["site/**"]
   workflow_dispatch:
 permissions:
   contents: read

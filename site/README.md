@@ -3,10 +3,10 @@
 - `landing.html` — source used for the Claude artifact preview (no `<html>`/`<head>` wrapper).
 - `index.html` — standalone copy hosted on the real domain. Keep both in sync when editing.
 
-## Go live (free, GitHub Pages)
+## Go live (later — not needed during development)
 
 1. Repo **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-   The workflow in `.github/workflows/pages.yml` publishes this folder on every push that changes `site/`.
+   Then open the **Actions** tab, pick **Deploy landing page**, and click **Run workflow** (it's manual-only until launch).
    (GitHub Pages on a private repo needs a paid GitHub plan; on a public repo it's free.)
 2. Buy `headsuppilot.com` (Cloudflare Registrar, Namecheap, Porkbun…).
 3. In **Settings → Pages → Custom domain**, enter `headsuppilot.com`, then add the DNS records GitHub shows at your registrar. Tick **Enforce HTTPS** once it's available.
