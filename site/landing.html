@@ -1,0 +1,351 @@
+<title>HeadsUp Pilot</title>
+<meta name="description" content="Flight info and traffic callouts on your Meta smart glasses, so you can keep your eyes outside the cockpit.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=B612:wght@400;700&family=B612+Mono:wght@400;700&family=Public+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a VFR sectional chart sheet. Hero pairs the pitch with a live mock of the lens display; sections below read like chart legend panels. */
+:root {
+  --paper: #f4f7f6;        /* chart paper, faint green-blue bias */
+  --paper-2: #e6eeec;
+  --ink: #17242b;
+  --ink-soft: #4a5a62;
+  --rule: #c6d3d1;
+  --magenta: #a3226e;      /* sectional chart Class E / airport magenta */
+  --blue: #1f4e8c;         /* Class B blue */
+  --lens: #0f1a1f;         /* the glasses display */
+  --lens-ink: #e9f3f1;
+  --lens-dim: #8fa6a3;
+  --alert: #f0b43c;
+  --font-display: "B612", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "B612 Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #10181c; --paper-2: #18242a; --ink: #e3ecea; --ink-soft: #9fb1b3; --rule: #2a3a40;
+    --magenta: #e2629f; --blue: #7aa6e0; --lens: #050a0c; --lens-ink: #eaf4f2; --lens-dim: #7f9894; --alert: #f2bd52;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #10181c; --paper-2: #18242a; --ink: #e3ecea; --ink-soft: #9fb1b3; --rule: #2a3a40;
+  --magenta: #e2629f; --blue: #7aa6e0; --lens: #050a0c; --lens-ink: #eaf4f2; --lens-dim: #7f9894; --alert: #f2bd52;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 1rem/1.6 var(--font-body);
+  /* faint latitude/longitude grid, like a chart */
+  background-image:
+    linear-gradient(var(--rule) 1px, transparent 1px),
+    linear-gradient(90deg, var(--rule) 1px, transparent 1px);
+  background-size: 120px 120px;
+  background-position: -1px -1px;
+}
+.wrap { max-width: 1080px; margin: 0 auto; padding-inline: 20px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+p { margin: 0; }
+a { color: var(--blue); }
+:focus-visible { outline: 3px solid var(--magenta); outline-offset: 2px; }
+
+/* header */
+.top { padding-block: 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; color: var(--ink); text-decoration: none; }
+.brand svg { flex: none; }
+.top a.cta-link { font-family: var(--font-mono); font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--magenta); text-decoration: none; border: 1.5px solid var(--magenta); padding: 8px 12px; border-radius: 4px; background: var(--paper); }
+
+/* hero */
+.hero { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 48px; align-items: center; padding-block: 40px 56px; }
+.eyebrow { font-family: var(--font-mono); font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; color: var(--magenta); }
+.hero h1 { font-size: clamp(2.3rem, 5.4vw, 3.9rem); line-height: 1.04; margin-top: 14px; }
+.hero h1 em { font-style: normal; color: var(--blue); }
+.lede { margin-top: 18px; font-size: 1.13rem; color: var(--ink-soft); max-width: 34em; }
+.works-with { margin-top: 22px; font-family: var(--font-mono); font-size: .78rem; color: var(--ink-soft); letter-spacing: .03em; }
+
+/* the lens mock */
+.lens-frame { position: relative; background: var(--paper-2); border: 1px solid var(--rule); border-radius: 18px; padding: 22px; }
+.lens-caption { font-family: var(--font-mono); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); display: flex; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+.lens {
+  background: var(--lens); color: var(--lens-ink); border-radius: 12px; padding: 20px 22px;
+  font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+  max-width: 100%;
+}
+.readouts { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
+.ro .v { font-size: clamp(1.3rem, 3vw, 1.75rem); font-weight: 700; line-height: 1.1; }
+.ro .k { font-size: .66rem; letter-spacing: .12em; color: var(--lens-dim); text-transform: uppercase; margin-top: 2px; }
+.dto { display: flex; align-items: center; gap: 16px; margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.12); }
+.dto svg { flex: none; }
+.dto .apt { font-size: 1.15rem; font-weight: 700; }
+.dto .meta { font-size: .85rem; color: var(--lens-dim); }
+.traffic { margin-top: 16px; display: flex; gap: 10px; align-items: flex-start; background: rgba(240,180,60,.12); border-left: 3px solid var(--alert); padding: 10px 12px; border-radius: 4px; }
+.traffic .t1 { color: var(--alert); font-weight: 700; font-size: .78rem; letter-spacing: .1em; }
+.traffic .t2 { font-size: .95rem; }
+.speak { margin-top: 12px; font-family: var(--font-body); font-size: .85rem; color: var(--ink-soft); display: flex; gap: 8px; align-items: center; }
+@media (prefers-reduced-motion: no-preference) {
+  .traffic { animation: pulse 2.6s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { background: rgba(240,180,60,.10); } 50% { background: rgba(240,180,60,.22); } }
+}
+
+/* form */
+.signup { background: var(--paper); border: 1.5px solid var(--ink); border-radius: 10px; padding: 24px; margin-top: 30px; display: grid; gap: 14px; }
+.signup h2 { font-size: 1.2rem; }
+.fields { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+.field { display: grid; gap: 5px; min-width: 0; }
+.field.full { grid-column: 1 / -1; }
+label { font-family: var(--font-mono); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); }
+input, select {
+  font: inherit; color: var(--ink); background: var(--paper);
+  border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px; width: 100%;
+}
+input:focus, select:focus { border-color: var(--blue); outline: 2px solid color-mix(in srgb, var(--blue) 30%, transparent); }
+button.submit {
+  font-family: var(--font-display); font-weight: 700; font-size: 1rem;
+  background: var(--magenta); color: #fff; border: 0; border-radius: 6px; padding: 13px 18px; cursor: pointer;
+}
+button.submit:hover { filter: brightness(1.08); }
+.form-note { font-size: .82rem; color: var(--ink-soft); }
+.form-msg { font-size: .92rem; padding: 10px 12px; border-radius: 6px; background: var(--paper-2); }
+.form-msg.ok { border-left: 3px solid var(--blue); }
+.form-msg.err { border-left: 3px solid var(--magenta); }
+
+/* sections */
+section.band { padding-block: 56px; border-top: 1px solid var(--rule); background: color-mix(in srgb, var(--paper) 92%, transparent); }
+.band h2 { font-size: clamp(1.6rem, 3.4vw, 2.2rem); }
+.band .intro { margin-top: 10px; color: var(--ink-soft); max-width: 40em; }
+
+.tiers { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 24px; margin-top: 32px; }
+.tier { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 24px; min-width: 0; }
+.tier-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--rule); }
+.tier-head h3 { font-size: 1.25rem; }
+.tag { font-family: var(--font-mono); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; }
+.tag.free { color: var(--blue); border: 1px solid var(--blue); }
+.tag.pro { color: var(--paper); background: var(--magenta); }
+.tier ul { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 14px; }
+.tier li { display: grid; grid-template-columns: 7.5em minmax(0,1fr); gap: 12px; align-items: baseline; }
+.tier li .sample { font-family: var(--font-mono); font-size: .82rem; color: var(--magenta); font-variant-numeric: tabular-nums; }
+.tier li b { font-weight: 600; display: block; }
+.tier li span.d { color: var(--ink-soft); font-size: .92rem; }
+
+.flow { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr); gap: 14px; align-items: stretch; margin-top: 32px; }
+.node { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 20px; min-width: 0; }
+.node h3 { font-size: 1.05rem; }
+.node p { margin-top: 8px; color: var(--ink-soft); font-size: .93rem; }
+.node .kicker { font-family: var(--font-mono); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 8px; }
+.arrow { align-self: center; color: var(--magenta); font-family: var(--font-mono); font-size: 1.4rem; }
+
+.safety { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 40px; align-items: start; }
+.safety ul { margin: 0; padding-left: 1.1em; display: grid; gap: 10px; color: var(--ink-soft); }
+.safety ul strong { color: var(--ink); }
+
+footer { padding-block: 32px 48px; border-top: 1px solid var(--rule); font-size: .82rem; color: var(--ink-soft); display: grid; gap: 6px; background: var(--paper); }
+
+@media (max-width: 860px) {
+  .hero { grid-template-columns: minmax(0,1fr); gap: 32px; padding-block: 20px 40px; }
+  .tiers { grid-template-columns: minmax(0,1fr); }
+  .flow { grid-template-columns: minmax(0,1fr); }
+  .arrow { transform: rotate(90deg); justify-self: center; }
+  .safety { grid-template-columns: minmax(0,1fr); gap: 20px; }
+}
+@media (max-width: 520px) {
+  .fields { grid-template-columns: minmax(0,1fr); }
+  .readouts { gap: 6px; }
+  .tier li { grid-template-columns: minmax(0,1fr); gap: 2px; }
+  .top a.cta-link { padding: 7px 9px; }
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="#top" aria-label="HeadsUp Pilot home">
+      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true">
+        <circle cx="15" cy="15" r="13" fill="none" stroke="var(--blue)" stroke-width="2"/>
+        <path d="M5 16h7l3-4 3 4h7" fill="none" stroke="var(--magenta)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+      </svg>
+      HeadsUp Pilot
+    </a>
+    <a class="cta-link" href="#waitlist">Join the waitlist</a>
+  </header>
+
+  <main id="top">
+    <div class="hero">
+      <div>
+        <div class="eyebrow">For VFR private &amp; sport pilots</div>
+        <h1>Keep your eyes <em>outside</em> the cockpit.</h1>
+        <p class="lede">HeadsUp Pilot puts groundspeed, your course to the destination, nearby traffic and the nearest airport on your smart glasses. It speaks traffic callouts too, so you spend less time looking down at a tablet.</p>
+        <p class="works-with">Built for Meta Ray-Ban Display · audio callouts on Ray-Ban Meta · traffic from Stratux or Sentry ADS-B receivers</p>
+
+        <form class="signup" id="waitlist" novalidate>
+          <h2>Get early access</h2>
+          <div class="fields">
+            <div class="field full">
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+            </div>
+            <div class="field">
+              <label for="cert">I fly as</label>
+              <select id="cert" name="certificate">
+                <option>Private pilot</option>
+                <option>Sport pilot</option>
+                <option>Student pilot</option>
+                <option>CFI</option>
+                <option>Commercial / ATP</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="glasses">Smart glasses</label>
+              <select id="glasses" name="glasses">
+                <option>None yet</option>
+                <option>Meta Ray-Ban Display</option>
+                <option>Ray-Ban Meta / Oakley Meta</option>
+                <option>Other brand</option>
+              </select>
+            </div>
+            <div class="field full">
+              <label for="adsb">ADS-B receiver</label>
+              <select id="adsb" name="adsb_receiver">
+                <option>None</option>
+                <option>Stratux</option>
+                <option>Sentry</option>
+                <option>Other portable receiver</option>
+                <option>Panel-mounted only</option>
+              </select>
+            </div>
+          </div>
+          <button class="submit" type="submit">Join the waitlist</button>
+          <p class="form-msg" id="form-msg" role="status" hidden></p>
+          <p class="form-note">We'll email you when beta testing opens. No spam.</p>
+        </form>
+      </div>
+
+      <div class="lens-frame" aria-label="Example of what appears in the glasses display">
+        <div class="lens-caption"><span>In your right lens</span><span>Example flight</span></div>
+        <div class="lens">
+          <div class="readouts">
+            <div class="ro"><div class="v">112</div><div class="k">GS kt</div></div>
+            <div class="ro"><div class="v">045°</div><div class="k">Track</div></div>
+            <div class="ro"><div class="v">4,500</div><div class="k">GPS alt ft</div></div>
+          </div>
+          <div class="dto">
+            <svg width="54" height="54" viewBox="0 0 54 54" aria-hidden="true">
+              <circle cx="27" cy="27" r="25" fill="none" stroke="var(--lens-dim)" stroke-width="1.5" stroke-dasharray="3 4"/>
+              <g transform="rotate(22 27 27)"><path d="M27 7 L35 27 L27 23 L19 27 Z" fill="var(--lens-ink)"/><rect x="25.5" y="25" width="3" height="18" fill="var(--lens-ink)"/></g>
+            </svg>
+            <div>
+              <div class="apt">→ KPAO Palo Alto</div>
+              <div class="meta">23 NM · 12 MIN · Rwy 31 best for wind 300° / 8 kt</div>
+            </div>
+          </div>
+          <div class="traffic">
+            <div>
+              <div class="t1">TRAFFIC</div>
+              <div class="t2">2 o'clock · 3 mi · 500 ft above · climbing</div>
+            </div>
+          </div>
+        </div>
+        <p class="speak">
+          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="var(--magenta)"/><path d="M16 8.5a5 5 0 010 7M18.5 6a8.5 8.5 0 010 12" fill="none" stroke="var(--magenta)" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Spoken: “Traffic, two o'clock, three miles, five hundred above.”
+        </p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<section class="band" id="features">
+  <div class="wrap">
+    <h2>What shows up in the lens</h2>
+    <p class="intro">A small, glanceable screen. The free version uses your phone's GPS. Pro adds an ADS-B receiver for traffic and weather.</p>
+    <div class="tiers">
+      <div class="tier">
+        <div class="tier-head"><h3>Free</h3><span class="tag free">Phone GPS</span></div>
+        <ul>
+          <li><span class="sample">112 kt</span><span><b>Groundspeed</b><span class="d">Your speed over the ground, so you know how the wind is treating you.</span></span></li>
+          <li><span class="sample">TRK 045°</span><span><b>Track</b><span class="d">The direction you're actually moving, including wind drift.</span></span></li>
+          <li><span class="sample">4,500 ft GPS</span><span><b>GPS altitude</b><span class="d">A cross-check only. Always fly by your altimeter.</span></span></li>
+          <li><span class="sample">→ 23 NM</span><span><b>Direct-to</b><span class="d">Enter your destination before takeoff and get an arrow, distance and time to arrive.</span></span></li>
+        </ul>
+      </div>
+      <div class="tier">
+        <div class="tier-head"><h3>Pro</h3><span class="tag pro">With ADS-B</span></div>
+        <ul>
+          <li><span class="sample">2 o'clock</span><span><b>Traffic callouts</b><span class="d">Nearby aircraft shown and spoken, by clock position, distance and height.</span></span></li>
+          <li><span class="sample">KHWD 6 NM</span><span><b>Nearest airport</b><span class="d">Always on screen, so you know where to go if something goes wrong.</span></span></li>
+          <li><span class="sample">300° / 8 kt</span><span><b>Destination wind</b><span class="d">Wind at your destination and the runway that gives you the best headwind.</span></span></li>
+          <li><span class="sample">Audio only</span><span><b>Voice mode</b><span class="d">Every alert spoken, so it also works on glasses without a display.</span></span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="how">
+  <div class="wrap">
+    <h2>How it works</h2>
+    <p class="intro">No wiring into the aircraft. Your phone does the work and the glasses become its screen and speaker.</p>
+    <div class="flow">
+      <div class="node"><div class="kicker">In your flight bag</div><h3>ADS-B receiver</h3><p>Stratux or Sentry sends traffic and weather to your phone over Wi-Fi.</p></div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="node"><div class="kicker">In your pocket</div><h3>HeadsUp Pilot app</h3><p>Combines GPS, traffic and airport data and decides what's worth telling you.</p></div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="node"><div class="kicker">On your face</div><h3>Smart glasses</h3><p>Shows a compact display in your right lens and speaks alerts through the open-ear speakers.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="safety">
+  <div class="wrap safety">
+    <h2>Built as a co-pilot, not an instrument</h2>
+    <ul>
+      <li><strong>Supplementary only.</strong> HeadsUp Pilot adds situational awareness. It never replaces your certified instruments or your scan.</li>
+      <li><strong>VFR first.</strong> Designed for daytime visual flying by private and sport pilots.</li>
+      <li><strong>Glanceable by design.</strong> A few numbers and one alert at a time. Audio carries the rest.</li>
+      <li><strong>You're the pilot in command.</strong> Turn it off with one tap or a voice command.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap" style="display:grid;gap:6px">
+    <p>© 2026 HeadsUp Pilot. In development. Features may change before launch.</p>
+    <p>Not affiliated with or endorsed by Meta, Ray-Ban, Stratux or Sentry. Product names belong to their owners.</p>
+  </div>
+</footer>
+
+<script>
+// Paste a form endpoint (e.g. Formspree "https://formspree.io/f/xxxx") to collect sign-ups on the hosted site.
+const FORM_ENDPOINT = "";
+
+(function () {
+  const form = document.getElementById("waitlist");
+  const msg = document.getElementById("form-msg");
+  function show(text, kind) { msg.textContent = text; msg.className = "form-msg " + kind; msg.hidden = false; }
+
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const email = document.getElementById("email").value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      show("Enter a valid email address, like you@example.com.", "err");
+      document.getElementById("email").focus();
+      return;
+    }
+    if (!FORM_ENDPOINT) {
+      show("Sign-ups aren't connected on this preview yet. Please check back soon.", "err");
+      return;
+    }
+    const data = Object.fromEntries(new FormData(form).entries());
+    try {
+      const res = await fetch(FORM_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(data) });
+      if (!res.ok) throw new Error(String(res.status));
+      form.reset();
+      show("You're on the list. We'll email you when beta testing opens.", "ok");
+    } catch (err) {
+      show("We couldn't save your sign-up. Check your connection and try again.", "err");
+    }
+  });
+})();
+</script>
