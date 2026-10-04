@@ -1,0 +1,10 @@
+.env
+.env.*
+*.key
+.DS_Store
+node_modules/
+build/
+.gradle/
+DerivedData/
+*.xcuserstate
+local.properties
