@@ -1,351 +1,360 @@
-<title>HeadsUp Pilot</title>
-<meta name="description" content="Flight info and traffic callouts on your Meta smart glasses, so you can keep your eyes outside the cockpit.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=B612:wght@400;700&family=B612+Mono:wght@400;700&family=Public+Sans:wght@400;500;600&display=swap">
+<title>[BrandName] — What's that plane?</title>
+<meta name="description" content="Look up, ask “what's that plane?” and hear the airline, aircraft, route and altitude — on your phone or hands-free on smart glasses.">
+<meta name="theme-color" content="#f6f7f9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b1220" media="(prefers-color-scheme: dark)">
 <style>
-/* Layout: a VFR sectional chart sheet. Hero pairs the pitch with a live mock of the lens display; sections below read like chart legend panels. */
+/* Mobile-first. The first screen on a phone = brand, headline, pitch, the four MVP 1 features and one button. Everything else sits below. */
 :root {
-  --paper: #f4f7f6;        /* chart paper, faint green-blue bias */
-  --paper-2: #e6eeec;
-  --ink: #17242b;
-  --ink-soft: #4a5a62;
-  --rule: #c6d3d1;
-  --magenta: #a3226e;      /* sectional chart Class E / airport magenta */
-  --blue: #1f4e8c;         /* Class B blue */
-  --lens: #0f1a1f;         /* the glasses display */
-  --lens-ink: #e9f3f1;
-  --lens-dim: #8fa6a3;
-  --alert: #f0b43c;
-  --font-display: "B612", "Segoe UI", system-ui, sans-serif;
-  --font-mono: "B612 Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-  --font-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --ink: #0e1726;
+  --ink-soft: #5a6577;
+  --line: #e2e6ec;
+  --accent: #1d5fd1;      /* clear-sky blue */
+  --accent-ink: #ffffff;
+  --beacon: #e0561b;      /* anti-collision beacon */
+  --lens: #0b1220;
+  --lens-ink: #eef3fb;
+  --lens-dim: #8d9ab0;
+  --radius: 14px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #10181c; --paper-2: #18242a; --ink: #e3ecea; --ink-soft: #9fb1b3; --rule: #2a3a40;
-    --magenta: #e2629f; --blue: #7aa6e0; --lens: #050a0c; --lens-ink: #eaf4f2; --lens-dim: #7f9894; --alert: #f2bd52;
+    --bg: #0b1220; --surface: #121b2d; --ink: #e8edf5; --ink-soft: #9aa6ba; --line: #22304a;
+    --accent: #6ea2ff; --accent-ink: #0b1220; --beacon: #ff7a3d;
+    --lens: #04080f; --lens-ink: #eef3fb; --lens-dim: #7f8ca3;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --paper: #10181c; --paper-2: #18242a; --ink: #e3ecea; --ink-soft: #9fb1b3; --rule: #2a3a40;
-  --magenta: #e2629f; --blue: #7aa6e0; --lens: #050a0c; --lens-ink: #eaf4f2; --lens-dim: #7f9894; --alert: #f2bd52;
+  --bg: #0b1220; --surface: #121b2d; --ink: #e8edf5; --ink-soft: #9aa6ba; --line: #22304a;
+  --accent: #6ea2ff; --accent-ink: #0b1220; --beacon: #ff7a3d;
+  --lens: #04080f; --lens-ink: #eef3fb; --lens-dim: #7f8ca3;
   color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
-body {
-  background: var(--paper);
-  color: var(--ink);
-  font: 400 1rem/1.6 var(--font-body);
-  /* faint latitude/longitude grid, like a chart */
-  background-image:
-    linear-gradient(var(--rule) 1px, transparent 1px),
-    linear-gradient(90deg, var(--rule) 1px, transparent 1px);
-  background-size: 120px 120px;
-  background-position: -1px -1px;
-}
-.wrap { max-width: 1080px; margin: 0 auto; padding-inline: 20px; }
-h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
-p { margin: 0; }
-a { color: var(--blue); }
-:focus-visible { outline: 3px solid var(--magenta); outline-offset: 2px; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 1rem/1.5 var(--font); }
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { letter-spacing: -0.02em; text-wrap: balance; }
+a { color: var(--accent); }
+:focus-visible { outline: 3px solid var(--beacon); outline-offset: 2px; border-radius: 4px; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-inline: 16px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* header */
-.top { padding-block: 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; color: var(--ink); text-decoration: none; }
-.brand svg { flex: none; }
-.top a.cta-link { font-family: var(--font-mono); font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--magenta); text-decoration: none; border: 1.5px solid var(--magenta); padding: 8px 12px; border-radius: 4px; background: var(--paper); }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 12px; }
+.brand { display: flex; align-items: center; gap: 8px; color: var(--ink); text-decoration: none; font-weight: 700; font-size: 1.05rem; }
+.top .link { font-size: .9rem; font-weight: 600; text-decoration: none; }
 
 /* hero */
-.hero { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 48px; align-items: center; padding-block: 40px 56px; }
-.eyebrow { font-family: var(--font-mono); font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; color: var(--magenta); }
-.hero h1 { font-size: clamp(2.3rem, 5.4vw, 3.9rem); line-height: 1.04; margin-top: 14px; }
-.hero h1 em { font-style: normal; color: var(--blue); }
-.lede { margin-top: 18px; font-size: 1.13rem; color: var(--ink-soft); max-width: 34em; }
-.works-with { margin-top: 22px; font-family: var(--font-mono); font-size: .78rem; color: var(--ink-soft); letter-spacing: .03em; }
+.hero { display: grid; gap: 14px; padding-block: 4px 20px; }
+.hero h1 { font-size: clamp(1.9rem, 8.4vw, 3.6rem); line-height: 1.05; font-weight: 800; }
+.hero h1 .hl { color: var(--accent); }
+.pitch { color: var(--ink-soft); font-size: 1rem; max-width: 34em; }
 
-/* the lens mock */
-.lens-frame { position: relative; background: var(--paper-2); border: 1px solid var(--rule); border-radius: 18px; padding: 22px; }
-.lens-caption { font-family: var(--font-mono); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); display: flex; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
-.lens {
-  background: var(--lens); color: var(--lens-ink); border-radius: 12px; padding: 20px 22px;
-  font-family: var(--font-mono); font-variant-numeric: tabular-nums;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
-  max-width: 100%;
-}
-.readouts { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
-.ro .v { font-size: clamp(1.3rem, 3vw, 1.75rem); font-weight: 700; line-height: 1.1; }
-.ro .k { font-size: .66rem; letter-spacing: .12em; color: var(--lens-dim); text-transform: uppercase; margin-top: 2px; }
-.dto { display: flex; align-items: center; gap: 16px; margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.12); }
-.dto svg { flex: none; }
-.dto .apt { font-size: 1.15rem; font-weight: 700; }
-.dto .meta { font-size: .85rem; color: var(--lens-dim); }
-.traffic { margin-top: 16px; display: flex; gap: 10px; align-items: flex-start; background: rgba(240,180,60,.12); border-left: 3px solid var(--alert); padding: 10px 12px; border-radius: 4px; }
-.traffic .t1 { color: var(--alert); font-weight: 700; font-size: .78rem; letter-spacing: .1em; }
-.traffic .t2 { font-size: .95rem; }
-.speak { margin-top: 12px; font-family: var(--font-body); font-size: .85rem; color: var(--ink-soft); display: flex; gap: 8px; align-items: center; }
+.features { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 8px; }
+.feature { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; }
+.feature .ic { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); }
+.feature.star .ic { background: color-mix(in srgb, var(--beacon) 14%, transparent); color: var(--beacon); }
+.feature h3 { font-size: .98rem; line-height: 1.25; }
+.feature p { font-size: .86rem; line-height: 1.35; color: var(--ink-soft); }
+.badge { font-size: .66rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--beacon); margin-left: 6px; vertical-align: 1px; }
+
+.btn { display: inline-flex; justify-content: center; align-items: center; gap: 8px; min-height: 48px; padding: 12px 20px; border-radius: 12px; border: 0; background: var(--accent); color: var(--accent-ink); font: 700 1rem var(--font); text-decoration: none; cursor: pointer; }
+.btn:hover { filter: brightness(1.07); }
+.hero .btn { width: 100%; }
+.small { font-size: .8rem; color: var(--ink-soft); }
+
+/* glasses voice-answer mock */
+.mock { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 18px; display: grid; gap: 14px; }
+.mock-label { font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
+.say { display: flex; gap: 10px; align-items: flex-start; }
+.say .who { flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--bg); border: 1px solid var(--line); color: var(--ink-soft); }
+.bubble { padding: 10px 14px; border-radius: 16px; font-size: .95rem; line-height: 1.4; }
+.say.you .bubble { background: var(--bg); border: 1px solid var(--line); border-top-left-radius: 4px; }
+.say.app .bubble { background: var(--accent); color: var(--accent-ink); border-top-left-radius: 4px; font-weight: 600; }
+.say.app .who { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.lens { background: var(--lens); color: var(--lens-ink); border-radius: 16px; padding: 14px 16px; font-variant-numeric: tabular-nums; max-width: 300px; justify-self: end; width: 100%; }
+.lens .row1 { display: flex; justify-content: space-between; gap: 8px; font-weight: 700; }
+.lens .route { margin-top: 6px; font-size: 1.15rem; font-weight: 700; letter-spacing: .02em; }
+.lens .meta { margin-top: 4px; font-size: .82rem; color: var(--lens-dim); }
+.lens .tag { font-size: .66rem; letter-spacing: .1em; text-transform: uppercase; color: var(--lens-dim); }
+.wave { display: inline-flex; gap: 3px; align-items: center; height: 14px; margin-right: 6px; vertical-align: -2px; }
+.wave i { width: 3px; height: 6px; border-radius: 2px; background: currentColor; }
 @media (prefers-reduced-motion: no-preference) {
-  .traffic { animation: pulse 2.6s ease-in-out infinite; }
-  @keyframes pulse { 0%,100% { background: rgba(240,180,60,.10); } 50% { background: rgba(240,180,60,.22); } }
+  .wave i { animation: wv 1s ease-in-out infinite; }
+  .wave i:nth-child(2) { animation-delay: .15s; } .wave i:nth-child(3) { animation-delay: .3s; } .wave i:nth-child(4) { animation-delay: .45s; }
+  @keyframes wv { 0%, 100% { height: 4px; } 50% { height: 14px; } }
 }
 
-/* form */
-.signup { background: var(--paper); border: 1.5px solid var(--ink); border-radius: 10px; padding: 24px; margin-top: 30px; display: grid; gap: 14px; }
-.signup h2 { font-size: 1.2rem; }
-.fields { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
-.field { display: grid; gap: 5px; min-width: 0; }
-.field.full { grid-column: 1 / -1; }
-label { font-family: var(--font-mono); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); }
-input, select {
-  font: inherit; color: var(--ink); background: var(--paper);
-  border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px; width: 100%;
+/* sections below the fold */
+section { padding-block: 44px; border-top: 1px solid var(--line); }
+section h2 { font-size: clamp(1.45rem, 5vw, 2rem); font-weight: 800; }
+section .intro { margin-top: 8px; color: var(--ink-soft); max-width: 40em; }
+.grid { display: grid; gap: 12px; margin-top: 22px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
+.card h3 { font-size: 1rem; }
+.card p { margin-top: 4px; font-size: .93rem; color: var(--ink-soft); }
+.step { font-size: .75rem; font-weight: 800; color: var(--accent); letter-spacing: .08em; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; padding: 0; list-style: none; }
+.chips li { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; font-size: .93rem; }
+
+details { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 0 16px; }
+details + details { margin-top: 8px; }
+summary { cursor: pointer; font-weight: 650; padding-block: 14px; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; color: var(--ink-soft); font-weight: 400; font-size: 1.2rem; line-height: 1; }
+details[open] summary::after { content: "–"; }
+details p { padding-bottom: 14px; color: var(--ink-soft); font-size: .95rem; }
+
+.pilot { background: var(--lens); color: var(--lens-ink); border-radius: 20px; padding: 22px; display: grid; gap: 14px; }
+.pilot .soon { font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--beacon); }
+.pilot p { color: var(--lens-dim); }
+.pilot a { color: var(--lens-ink); }
+
+/* forms */
+form.signup { display: grid; gap: 10px; margin-top: 18px; max-width: 520px; }
+.inline { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+input[type="email"] { font: inherit; min-height: 48px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); width: 100%; }
+.pilot input[type="email"] { background: #0f1a2c; border-color: #2a3a58; color: var(--lens-ink); }
+input[type="email"]:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+.form-msg { font-size: .9rem; padding: 10px 12px; border-radius: 10px; background: var(--bg); color: var(--ink); border-left: 3px solid var(--accent); }
+.form-msg.err { border-left-color: var(--beacon); }
+
+footer { border-top: 1px solid var(--line); padding-block: 24px 40px; font-size: .82rem; color: var(--ink-soft); }
+footer .wrap { display: grid; gap: 6px; }
+
+/* larger phones / tablets */
+@media (min-width: 560px) {
+  .inline { grid-template-columns: minmax(0, 1fr) auto; }
+  .hero .btn { width: auto; }
+  .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
-input:focus, select:focus { border-color: var(--blue); outline: 2px solid color-mix(in srgb, var(--blue) 30%, transparent); }
-button.submit {
-  font-family: var(--font-display); font-weight: 700; font-size: 1rem;
-  background: var(--magenta); color: #fff; border: 0; border-radius: 6px; padding: 13px 18px; cursor: pointer;
+/* desktop: headline + features left, voice mock right; all four features visible without scrolling */
+@media (min-width: 900px) {
+  .top { padding-block: 20px; }
+  .hero-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 56px; align-items: center; min-height: calc(100svh - 90px); max-height: 760px; padding-bottom: 24px; }
+  .hero { padding: 0; gap: 18px; }
+  .pitch { font-size: 1.1rem; }
+  .features { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .feature { padding: 14px; align-items: start; }
+  .mock { padding: 24px; }
+  section { padding-block: 64px; }
+  .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pilot { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; padding: 36px; gap: 32px; }
 }
-button.submit:hover { filter: brightness(1.08); }
-.form-note { font-size: .82rem; color: var(--ink-soft); }
-.form-msg { font-size: .92rem; padding: 10px 12px; border-radius: 6px; background: var(--paper-2); }
-.form-msg.ok { border-left: 3px solid var(--blue); }
-.form-msg.err { border-left: 3px solid var(--magenta); }
-
-/* sections */
-section.band { padding-block: 56px; border-top: 1px solid var(--rule); background: color-mix(in srgb, var(--paper) 92%, transparent); }
-.band h2 { font-size: clamp(1.6rem, 3.4vw, 2.2rem); }
-.band .intro { margin-top: 10px; color: var(--ink-soft); max-width: 40em; }
-
-.tiers { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 24px; margin-top: 32px; }
-.tier { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 24px; min-width: 0; }
-.tier-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--rule); }
-.tier-head h3 { font-size: 1.25rem; }
-.tag { font-family: var(--font-mono); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; }
-.tag.free { color: var(--blue); border: 1px solid var(--blue); }
-.tag.pro { color: var(--paper); background: var(--magenta); }
-.tier ul { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 14px; }
-.tier li { display: grid; grid-template-columns: 7.5em minmax(0,1fr); gap: 12px; align-items: baseline; }
-.tier li .sample { font-family: var(--font-mono); font-size: .82rem; color: var(--magenta); font-variant-numeric: tabular-nums; }
-.tier li b { font-weight: 600; display: block; }
-.tier li span.d { color: var(--ink-soft); font-size: .92rem; }
-
-.flow { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr); gap: 14px; align-items: stretch; margin-top: 32px; }
-.node { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 20px; min-width: 0; }
-.node h3 { font-size: 1.05rem; }
-.node p { margin-top: 8px; color: var(--ink-soft); font-size: .93rem; }
-.node .kicker { font-family: var(--font-mono); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 8px; }
-.arrow { align-self: center; color: var(--magenta); font-family: var(--font-mono); font-size: 1.4rem; }
-
-.safety { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 40px; align-items: start; }
-.safety ul { margin: 0; padding-left: 1.1em; display: grid; gap: 10px; color: var(--ink-soft); }
-.safety ul strong { color: var(--ink); }
-
-footer { padding-block: 32px 48px; border-top: 1px solid var(--rule); font-size: .82rem; color: var(--ink-soft); display: grid; gap: 6px; background: var(--paper); }
-
-@media (max-width: 860px) {
-  .hero { grid-template-columns: minmax(0,1fr); gap: 32px; padding-block: 20px 40px; }
-  .tiers { grid-template-columns: minmax(0,1fr); }
-  .flow { grid-template-columns: minmax(0,1fr); }
-  .arrow { transform: rotate(90deg); justify-self: center; }
-  .safety { grid-template-columns: minmax(0,1fr); gap: 20px; }
-}
-@media (max-width: 520px) {
-  .fields { grid-template-columns: minmax(0,1fr); }
-  .readouts { gap: 6px; }
-  .tier li { grid-template-columns: minmax(0,1fr); gap: 2px; }
-  .top a.cta-link { padding: 7px 9px; }
+/* very short phones: tighten so the feature list still fits on the first screen */
+@media (max-height: 700px) and (max-width: 560px) {
+  .hero { gap: 10px; }
+  .feature { padding: 8px 10px; }
+  .feature .ic { width: 34px; height: 34px; }
+  .feature { grid-template-columns: 34px minmax(0, 1fr); }
 }
 </style>
 
 <div class="wrap">
   <header class="top">
-    <a class="brand" href="#top" aria-label="HeadsUp Pilot home">
-      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true">
-        <circle cx="15" cy="15" r="13" fill="none" stroke="var(--blue)" stroke-width="2"/>
-        <path d="M5 16h7l3-4 3 4h7" fill="none" stroke="var(--magenta)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+    <a class="brand" href="#top">
+      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+        <circle cx="13" cy="13" r="12" fill="var(--accent)"/>
+        <path d="M6.5 14.5l5-1.2 3.6-6.3h1.7l-1.6 5.6 3.6-.9 1.3-1.6h1.2l-.8 2.6.8 2.6h-1.2l-1.3-1.6-3.6-.9 1.6 5.6h-1.7l-3.6-6.3-5-1.2z" fill="var(--accent-ink)"/>
       </svg>
-      HeadsUp Pilot
+      <span data-brand>[BrandName]</span>
     </a>
-    <a class="cta-link" href="#waitlist">Join the waitlist</a>
+    <a class="link" href="#join">Early access</a>
   </header>
-
-  <main id="top">
-    <div class="hero">
-      <div>
-        <div class="eyebrow">For VFR private &amp; sport pilots</div>
-        <h1>Keep your eyes <em>outside</em> the cockpit.</h1>
-        <p class="lede">HeadsUp Pilot puts groundspeed, your course to the destination, nearby traffic and the nearest airport on your smart glasses. It speaks traffic callouts too, so you spend less time looking down at a tablet.</p>
-        <p class="works-with">Built for Meta Ray-Ban Display · audio callouts on Ray-Ban Meta · traffic from Stratux or Sentry ADS-B receivers</p>
-
-        <form class="signup" id="waitlist" novalidate>
-          <h2>Get early access</h2>
-          <div class="fields">
-            <div class="field full">
-              <label for="email">Email</label>
-              <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
-            </div>
-            <div class="field">
-              <label for="cert">I fly as</label>
-              <select id="cert" name="certificate">
-                <option>Private pilot</option>
-                <option>Sport pilot</option>
-                <option>Student pilot</option>
-                <option>CFI</option>
-                <option>Commercial / ATP</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="glasses">Smart glasses</label>
-              <select id="glasses" name="glasses">
-                <option>None yet</option>
-                <option>Meta Ray-Ban Display</option>
-                <option>Ray-Ban Meta / Oakley Meta</option>
-                <option>Other brand</option>
-              </select>
-            </div>
-            <div class="field full">
-              <label for="adsb">ADS-B receiver</label>
-              <select id="adsb" name="adsb_receiver">
-                <option>None</option>
-                <option>Stratux</option>
-                <option>Sentry</option>
-                <option>Other portable receiver</option>
-                <option>Panel-mounted only</option>
-              </select>
-            </div>
-          </div>
-          <button class="submit" type="submit">Join the waitlist</button>
-          <p class="form-msg" id="form-msg" role="status" hidden></p>
-          <p class="form-note">We'll email you when beta testing opens. No spam.</p>
-        </form>
-      </div>
-
-      <div class="lens-frame" aria-label="Example of what appears in the glasses display">
-        <div class="lens-caption"><span>In your right lens</span><span>Example flight</span></div>
-        <div class="lens">
-          <div class="readouts">
-            <div class="ro"><div class="v">112</div><div class="k">GS kt</div></div>
-            <div class="ro"><div class="v">045°</div><div class="k">Track</div></div>
-            <div class="ro"><div class="v">4,500</div><div class="k">GPS alt ft</div></div>
-          </div>
-          <div class="dto">
-            <svg width="54" height="54" viewBox="0 0 54 54" aria-hidden="true">
-              <circle cx="27" cy="27" r="25" fill="none" stroke="var(--lens-dim)" stroke-width="1.5" stroke-dasharray="3 4"/>
-              <g transform="rotate(22 27 27)"><path d="M27 7 L35 27 L27 23 L19 27 Z" fill="var(--lens-ink)"/><rect x="25.5" y="25" width="3" height="18" fill="var(--lens-ink)"/></g>
-            </svg>
-            <div>
-              <div class="apt">→ KPAO Palo Alto</div>
-              <div class="meta">23 NM · 12 MIN · Rwy 31 best for wind 300° / 8 kt</div>
-            </div>
-          </div>
-          <div class="traffic">
-            <div>
-              <div class="t1">TRAFFIC</div>
-              <div class="t2">2 o'clock · 3 mi · 500 ft above · climbing</div>
-            </div>
-          </div>
-        </div>
-        <p class="speak">
-          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="var(--magenta)"/><path d="M16 8.5a5 5 0 010 7M18.5 6a8.5 8.5 0 010 12" fill="none" stroke="var(--magenta)" stroke-width="1.8" stroke-linecap="round"/></svg>
-          Spoken: “Traffic, two o'clock, three miles, five hundred above.”
-        </p>
-      </div>
-    </div>
-  </main>
 </div>
 
-<section class="band" id="features">
-  <div class="wrap">
-    <h2>What shows up in the lens</h2>
-    <p class="intro">A small, glanceable screen. The free version uses your phone's GPS. Pro adds an ADS-B receiver for traffic and weather.</p>
-    <div class="tiers">
-      <div class="tier">
-        <div class="tier-head"><h3>Free</h3><span class="tag free">Phone GPS</span></div>
-        <ul>
-          <li><span class="sample">112 kt</span><span><b>Groundspeed</b><span class="d">Your speed over the ground, so you know how the wind is treating you.</span></span></li>
-          <li><span class="sample">TRK 045°</span><span><b>Track</b><span class="d">The direction you're actually moving, including wind drift.</span></span></li>
-          <li><span class="sample">4,500 ft GPS</span><span><b>GPS altitude</b><span class="d">A cross-check only. Always fly by your altimeter.</span></span></li>
-          <li><span class="sample">→ 23 NM</span><span><b>Direct-to</b><span class="d">Enter your destination before takeoff and get an arrow, distance and time to arrive.</span></span></li>
-        </ul>
-      </div>
-      <div class="tier">
-        <div class="tier-head"><h3>Pro</h3><span class="tag pro">With ADS-B</span></div>
-        <ul>
-          <li><span class="sample">2 o'clock</span><span><b>Traffic callouts</b><span class="d">Nearby aircraft shown and spoken, by clock position, distance and height.</span></span></li>
-          <li><span class="sample">KHWD 6 NM</span><span><b>Nearest airport</b><span class="d">Always on screen, so you know where to go if something goes wrong.</span></span></li>
-          <li><span class="sample">300° / 8 kt</span><span><b>Destination wind</b><span class="d">Wind at your destination and the runway that gives you the best headwind.</span></span></li>
-          <li><span class="sample">Audio only</span><span><b>Voice mode</b><span class="d">Every alert spoken, so it also works on glasses without a display.</span></span></li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
+<main id="top">
+  <div class="wrap hero-grid">
+    <div class="hero">
+      <h1>Look up. Ask.<br><span class="hl">Know the plane.</span></h1>
+      <p class="pitch">See any plane in the sky and find out what it is — on your phone, or hands-free on smart glasses.</p>
 
-<section class="band" id="how">
+      <h2 class="sr-only">Features</h2>
+      <ul class="features">
+        <li class="feature">
+          <span class="ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".6" fill="currentColor"/><path d="M17 6.5l1.5-1.5"/></svg></span>
+          <div><h3>Planes near me</h3><p>Every plane within 50 km, nearest first, on a list and map.</p></div>
+        </li>
+        <li class="feature">
+          <span class="ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="9" width="8" height="13" rx="2"/><path d="M11 9V5M15 3l-4 2-4-2"/><path d="M18 4l2-2M19 8h2"/></svg></span>
+          <div><h3>Point to identify</h3><p>Aim your phone at the sky to see which plane that is.</p></div>
+        </li>
+        <li class="feature star">
+          <span class="ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6.5" cy="13" r="3.5"/><circle cx="17.5" cy="13" r="3.5"/><path d="M10 13h4M3 13V10l2-3M21 13v-3l-2-3"/></svg></span>
+          <div><h3>Ask your glasses <span class="badge">New</span></h3><p>Say “Hey Meta, what's that plane?” and hear the answer.</p></div>
+        </li>
+        <li class="feature">
+          <span class="ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
+          <div><h3>Plane details</h3><p>Airline, aircraft, route, altitude and speed at a glance.</p></div>
+        </li>
+      </ul>
+
+      <div><a class="btn" href="#join">Get early access</a></div>
+    </div>
+
+    <figure class="mock" aria-label="Example: asking the glasses about a plane">
+      <figcaption class="mock-label">On your glasses</figcaption>
+      <div class="say you">
+        <span class="who" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></span>
+        <p class="bubble">Hey Meta, what's that plane?</p>
+      </div>
+      <div class="say app">
+        <span class="who" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 010 7"/></svg></span>
+        <p class="bubble"><span class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i></span>IndiGo A320, Chennai to Delhi, 32,000 feet, 25 kilometres north.</p>
+      </div>
+      <div class="lens" aria-label="Card shown on Meta Ray-Ban Display">
+        <div class="row1"><span>IndiGo · A320</span><span class="tag">Display</span></div>
+        <div class="route">MAA → DEL</div>
+        <div class="meta">32,000 ft · 25 km N · 830 km/h</div>
+      </div>
+    </figure>
+  </div>
+</main>
+
+<section id="how">
   <div class="wrap">
     <h2>How it works</h2>
-    <p class="intro">No wiring into the aircraft. Your phone does the work and the glasses become its screen and speaker.</p>
-    <div class="flow">
-      <div class="node"><div class="kicker">In your flight bag</div><h3>ADS-B receiver</h3><p>Stratux or Sentry sends traffic and weather to your phone over Wi-Fi.</p></div>
-      <div class="arrow" aria-hidden="true">→</div>
-      <div class="node"><div class="kicker">In your pocket</div><h3>HeadsUp Pilot app</h3><p>Combines GPS, traffic and airport data and decides what's worth telling you.</p></div>
-      <div class="arrow" aria-hidden="true">→</div>
-      <div class="node"><div class="kicker">On your face</div><h3>Smart glasses</h3><p>Shows a compact display in your right lens and speaks alerts through the open-ear speakers.</p></div>
+    <p class="intro">Your phone does the work. Glasses are optional: they let you ask without taking your phone out.</p>
+    <div class="grid three">
+      <div class="card"><div class="step">1</div><h3>Live flight data</h3><p>Aircraft positions come from live flight-tracking networks that pick up the signals planes broadcast.</p></div>
+      <div class="card"><div class="step">2</div><h3>Your phone</h3><p>Knows where you are and which way you're facing, then works out which plane is in that direction.</p></div>
+      <div class="card"><div class="step">3</div><h3>Phone or glasses</h3><p>See the answer on screen, or hear it through your glasses in one short sentence.</p></div>
     </div>
   </div>
 </section>
 
-<section class="band" id="safety">
-  <div class="wrap safety">
-    <h2>Built as a co-pilot, not an instrument</h2>
-    <ul>
-      <li><strong>Supplementary only.</strong> HeadsUp Pilot adds situational awareness. It never replaces your certified instruments or your scan.</li>
-      <li><strong>VFR first.</strong> Designed for daytime visual flying by private and sport pilots.</li>
-      <li><strong>Glanceable by design.</strong> A few numbers and one alert at a time. Audio carries the rest.</li>
-      <li><strong>You're the pilot in command.</strong> Turn it off with one tap or a voice command.</li>
+<section id="who">
+  <div class="wrap">
+    <h2>Who it's for</h2>
+    <p class="intro">Anyone who looks up when a plane goes over.</p>
+    <ul class="chips">
+      <li>Plane spotters</li>
+      <li>Families &amp; curious kids</li>
+      <li>Travellers</li>
+      <li>Meeting someone at the airport</li>
+      <li>People near airports &amp; flight paths</li>
     </ul>
   </div>
 </section>
 
+<section id="faq">
+  <div class="wrap">
+    <h2>Questions</h2>
+    <div class="grid">
+      <div>
+        <details>
+          <summary>Which glasses work with it?</summary>
+          <p>Meta Ray-Ban Display (spoken answer plus a small card in the lens) and Ray-Ban Meta (spoken answer). Glasses are optional — everything also works on the phone.</p>
+        </details>
+        <details>
+          <summary>Which phones are supported?</summary>
+          <p>Android first. iPhone is planned next.</p>
+        </details>
+        <details>
+          <summary>Where does the flight data come from?</summary>
+          <p>From live flight-tracking networks that receive the position signals aircraft broadcast. Some planes don't share their route, so a few details may show as unknown.</p>
+        </details>
+        <details>
+          <summary>Does it work everywhere?</summary>
+          <p>It works wherever flight-tracking networks have coverage, which includes most busy airspace. You need an internet connection.</p>
+        </details>
+        <details>
+          <summary>How much does it cost?</summary>
+          <p>The core features will be free. Early-access testers help us decide what comes next.</p>
+        </details>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pilot-mode">
+  <div class="wrap">
+    <div class="pilot">
+      <div>
+        <div class="soon">Coming soon</div>
+        <h2>Pilot mode</h2>
+        <p style="margin-top:8px">For VFR private and sport pilots: groundspeed, direction to your destination, traffic callouts and the nearest airport on your glasses. In closed beta first, after flight testing. <a href="pilot.html">Learn more</a></p>
+      </div>
+      <form class="signup" data-list="pilot-beta" novalidate aria-label="Pilot mode beta sign-up" style="margin-top:0">
+        <label class="sr-only" for="pilot-email">Email for pilot beta</label>
+        <div class="inline">
+          <input id="pilot-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+          <button class="btn" type="submit">Join pilot beta</button>
+        </div>
+        <p class="form-msg" role="status" hidden></p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section id="join">
+  <div class="wrap">
+    <h2>Get early access</h2>
+    <p class="intro">Be one of the first to try <span data-brand>[BrandName]</span>. We'll email you when the test version is ready. No spam.</p>
+    <form class="signup" data-list="early-access" novalidate aria-label="Early access sign-up">
+      <label class="sr-only" for="email">Email</label>
+      <div class="inline">
+        <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+        <button class="btn" type="submit">Notify me</button>
+      </div>
+      <p class="form-msg" role="status" hidden></p>
+    </form>
+  </div>
+</section>
+
 <footer>
-  <div class="wrap" style="display:grid;gap:6px">
-    <p>© 2026 HeadsUp Pilot. In development. Features may change before launch.</p>
-    <p>Not affiliated with or endorsed by Meta, Ray-Ban, Stratux or Sentry. Product names belong to their owners.</p>
+  <div class="wrap">
+    <p>© 2026 <span data-brand>[BrandName]</span>. In development — features may change before launch.</p>
+    <p>Not affiliated with or endorsed by Meta or Ray-Ban. Product names belong to their owners.</p>
   </div>
 </footer>
 
 <script>
+// Brand name is not decided yet: change it here (the HTML also says [BrandName] so the page reads fine without JavaScript).
+const BRAND = "[BrandName]";
 // Paste a form endpoint (e.g. Formspree "https://formspree.io/f/xxxx") to collect sign-ups on the hosted site.
 const FORM_ENDPOINT = "";
 
 (function () {
-  const form = document.getElementById("waitlist");
-  const msg = document.getElementById("form-msg");
-  function show(text, kind) { msg.textContent = text; msg.className = "form-msg " + kind; msg.hidden = false; }
+  document.querySelectorAll("[data-brand]").forEach(function (el) { el.textContent = BRAND; });
+  document.title = document.title.replace("[BrandName]", BRAND);
 
-  form.addEventListener("submit", async function (e) {
-    e.preventDefault();
-    const email = document.getElementById("email").value.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      show("Enter a valid email address, like you@example.com.", "err");
-      document.getElementById("email").focus();
-      return;
-    }
-    if (!FORM_ENDPOINT) {
-      show("Sign-ups aren't connected on this preview yet. Please check back soon.", "err");
-      return;
-    }
-    const data = Object.fromEntries(new FormData(form).entries());
-    try {
-      const res = await fetch(FORM_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(data) });
-      if (!res.ok) throw new Error(String(res.status));
-      form.reset();
-      show("You're on the list. We'll email you when beta testing opens.", "ok");
-    } catch (err) {
-      show("We couldn't save your sign-up. Check your connection and try again.", "err");
-    }
+  document.querySelectorAll("form.signup").forEach(function (form) {
+    const msg = form.querySelector(".form-msg");
+    const input = form.querySelector('input[type="email"]');
+    function show(text, kind) { msg.textContent = text; msg.className = "form-msg " + kind; msg.hidden = false; }
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const email = input.value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        show("Enter a valid email address, like you@example.com.", "err");
+        input.focus();
+        return;
+      }
+      if (!FORM_ENDPOINT) {
+        show("Sign-ups aren't connected on this preview yet. Please check back soon.", "err");
+        return;
+      }
+      try {
+        const res = await fetch(FORM_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          body: JSON.stringify({ email: email, list: form.dataset.list })
+        });
+        if (!res.ok) throw new Error(String(res.status));
+        form.reset();
+        show("You're on the list. We'll email you soon.", "ok");
+      } catch (err) {
+        show("We couldn't save your sign-up. Check your connection and try again.", "err");
+      }
+    });
   });
 })();
 </script>
