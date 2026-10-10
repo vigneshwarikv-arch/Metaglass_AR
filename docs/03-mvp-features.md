@@ -1,4 +1,6 @@
-# 03 — MVP Features
+# 03 — MVP Features (original pilot-only plan)
+
+> **Superseded** by [06-product-plan.md](06-product-plan.md) and [08-mvp2-pilot-mode.md](08-mvp2-pilot-mode.md). Kept for history.
 
 *Status: **proposed**, not final. Validate with 10–20 hobby pilots before building.*
 
