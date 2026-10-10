@@ -23,4 +23,5 @@ dependencyResolutionManagement {
 rootProject.name = "WhatsThatPlane"
 
 // core: pure Kotlin engine (no Android). data: aircraft + route connectors (pure Kotlin).
-include(":core", ":data")
+// glasses: Meta glasses output connector (DAT). app: the phone app.
+include(":core", ":data", ":glasses", ":app")
