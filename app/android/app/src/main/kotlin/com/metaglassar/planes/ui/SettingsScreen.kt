@@ -42,6 +42,7 @@ fun SettingsScreen(
     onConnectGlasses: () -> Unit,
     onDisconnectGlasses: () -> Unit,
     onEnableGlassesMic: () -> Unit,
+    sim: SimControls,
 ) {
   val s = state.settings
   Column(
@@ -107,6 +108,8 @@ fun SettingsScreen(
       }
       Hint("Say “Hey Meta, start ${Brand.NAME}”, or with the microphone allowed, “What's that plane?”. Works with Ray-Ban Meta and Meta Ray-Ban Display.")
     }
+
+    SimulatedGlassesSection(s, sim)
 
     Text(
         "${Brand.NAME} · prototype · not affiliated with Meta or Ray-Ban.",

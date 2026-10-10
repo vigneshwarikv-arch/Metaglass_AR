@@ -25,4 +25,6 @@ dependencies {
   implementation(libs.mwdat.motion)
   implementation(libs.mwdat.speech)
   implementation(libs.mwdat.display)
+  // Simulated glasses for testing without hardware (Settings → Simulated glasses).
+  implementation(libs.mwdat.mockdevice)
 }

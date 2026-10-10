@@ -78,7 +78,7 @@ class DatGlassesConnector(
                 _status.value = GlassesStatus.Error(e.message ?: e.javaClass.simpleName)
               })
   private val headAim = HeadAim()
-  private val spoken = SpokenOutput(appContext)
+  private val spoken by lazy { SpokenOutput(appContext) }
 
   private val _status = MutableStateFlow<GlassesStatus>(GlassesStatus.NotRegistered)
   override val status: StateFlow<GlassesStatus> = _status.asStateFlow()
@@ -101,10 +101,16 @@ class DatGlassesConnector(
   private var voiceJob: Job? = null
   private val metadataJobs = mutableMapOf<DeviceIdentifier, Job>()
   private val connectedDevices = mutableSetOf<DeviceIdentifier>()
+  private var started = false
 
-  // Keep this init block AFTER all fields: the scope dispatches immediately, so code launched here
-  // runs before later field initializers would.
-  init {
+  /**
+   * Starts DAT. Meta's docs: request runtime permissions (BLUETOOTH_CONNECT) before initializing,
+   * otherwise DAT can't see paired glasses. So the app calls this once Bluetooth permission is
+   * granted, or when simulated glasses are turned on — not at every launch. Safe to call repeatedly.
+   */
+  override fun start() {
+    if (started) return
+    started = true
     Wearables.initialize(appContext).onFailure { error, _ ->
       _status.value = GlassesStatus.Unavailable(error.description)
     }

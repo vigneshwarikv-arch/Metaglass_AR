@@ -26,8 +26,14 @@ class MainActivity : ComponentActivity() {
         vm.onLocationPermission(result.values.any { it })
       }
 
+  /** Bluetooth permission comes first: DAT must not start without it (see GlassesConnector.start). */
   private val bluetoothPermission =
-      registerForActivityResult(ActivityResultContracts.RequestPermission()) { _ -> }
+      registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) {
+          glasses.start()
+          glasses.startRegistration(this)
+        }
+      }
 
   /** Glasses microphone (opens the Meta AI app); only launched from a user tap. */
   private val glassesMicPermission =
@@ -37,6 +43,7 @@ class MainActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
     enableEdgeToEdge()
     vm.onLocationPermission(hasLocationPermission())
+    if (granted(Manifest.permission.BLUETOOTH_CONNECT)) glasses.start()
     glasses.onIntent(intent)
 
     lifecycle.addObserver(
@@ -55,8 +62,12 @@ class MainActivity : ComponentActivity() {
                   arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
             },
             onConnectGlasses = {
-              if (!granted(Manifest.permission.BLUETOOTH_CONNECT)) bluetoothPermission.launch(Manifest.permission.BLUETOOTH_CONNECT)
-              glasses.startRegistration(this)
+              if (granted(Manifest.permission.BLUETOOTH_CONNECT)) {
+                glasses.start()
+                glasses.startRegistration(this)
+              } else {
+                bluetoothPermission.launch(Manifest.permission.BLUETOOTH_CONNECT)
+              }
             },
             onDisconnectGlasses = { glasses.startUnregistration(this) },
             onEnableGlassesMic = { glassesMicPermission.launch(Permission.MICROPHONE) },

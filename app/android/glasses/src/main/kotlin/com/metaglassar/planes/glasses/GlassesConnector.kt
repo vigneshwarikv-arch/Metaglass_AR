@@ -48,6 +48,9 @@ interface GlassesConnector : AnswerOutput {
   /** Emits each time the wearer asks "what's that plane?". */
   val askRequests: Flow<AskTrigger>
 
+  /** Starts the glasses SDK. Call once Bluetooth permission is granted (or for simulated glasses). */
+  fun start()
+
   /** Connect the app to Meta AI (opens the Meta AI app). */
   fun startRegistration(activity: Activity)
 

@@ -20,6 +20,8 @@ import com.metaglassar.planes.data.SampleSource
 import com.metaglassar.planes.data.enrich
 import com.metaglassar.planes.glasses.AskTrigger
 import com.metaglassar.planes.glasses.GlassesStatus
+import com.metaglassar.planes.glasses.SimulatedModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -237,4 +239,45 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
           ?: Selection.NoAircraft
 
   fun dismissAnswer() = _state.update { it.copy(lastAnswer = null) }
+
+  // region Simulated glasses (testing without hardware)
+
+  private val sim = graph.simulatedGlasses
+  private val _simHead = MutableStateFlow(Pointing(0.0, 15.0))
+  /** Where the simulated wearer is looking (true north). */
+  val simHead: StateFlow<Pointing> = _simHead.asStateFlow()
+
+  fun setSimulatedGlasses(on: Boolean, model: SimulatedModel = state.value.settings.simulatedModel) {
+    updateSettings { it.copy(simulatedGlasses = on, simulatedModel = model) }
+    if (on) graph.glasses.start()
+    viewModelScope.launch(Dispatchers.Default) {
+      if (on) {
+        sim.enable(model)
+        setSimHead(_simHead.value)
+      } else {
+        sim.disable()
+      }
+    }
+  }
+
+  fun setSimHead(head: Pointing) {
+    _simHead.value = head
+    val declination = (state.value.location as? LocationState.Known)?.point?.let(::declinationAt) ?: 0.0
+    sim.setHead(Geo.normalizeDeg(head.bearingDeg - declination), head.elevationDeg)
+  }
+
+  /** Turns the simulated head toward the nearest plane in the air. */
+  fun simLookAtNearest() {
+    state.value.nearby.firstOrNull { !it.aircraft.onGround }?.let {
+      setSimHead(Pointing(it.look.bearingDeg, it.look.elevationDeg))
+    }
+  }
+
+  fun simSayWhatsThatPlane() = sim.sayWhatsThatPlane()
+
+  fun simVoiceLaunch() = sim.voiceLaunch()
+
+  fun simDisplayPreview(context: android.content.Context) = sim.displayPreview(context)
+
+  // endregion
 }

@@ -68,6 +68,21 @@ shared with testers, but a public release needs a small backend instead of shipp
 **Sample mode** works offline and sets your location to Chennai or Milpitas, so either founder can test
 the other's sky.
 
+## Simulated glasses (test without hardware, e.g. in India)
+
+**Settings → Simulated glasses** turns on Meta's MockDeviceKit: a pretend pair of Ray-Ban Meta or
+Meta Ray-Ban Display glasses that the app connects to through the real DAT code path. Use it with
+**Sample** data or live data:
+
+1. Turn the switch on. Within a few seconds "Meta glasses" shows *Connected to Simulated … · head tracking on · listening*.
+2. Move **Turn head** / **Look up**, or tap **Look at the nearest plane**.
+3. Tap **Say: "What's that plane?"** (or **Say: "Hey Meta, start [BrandName]"**). The answer appears at the
+   top of the screen and is spoken through the phone; with *Meta Ray-Ban Display* the card appears in
+   **What the Display shows**.
+
+No Meta account, Meta AI app or Developer Center setup is needed for the simulator. Turn it off before
+connecting real glasses.
+
 ## For the US partner: test build + Meta glasses
 
 The glasses features can only be tested in a country where Meta AI glasses are supported. They also need
@@ -141,5 +156,6 @@ Do this outdoors with planes in view, or near an airport. Note the glasses model
   speak-on-glasses API. Needs checking on real glasses (checklist above).
 - **Head-direction axes** come from Meta's BirdSpotter sample measurements; confirm on our pair.
 - **Compass accuracy**: phones are often 5–10° off near metal or cars. The pointing tolerance is ±12°.
-- No MockDeviceKit (simulated glasses) screen yet. Without glasses, the phone **Ask** button runs the
-  same pipeline using the phone's direction and the phone speaker.
+- **Head-direction axes are uncertain.** Meta's BirdSpotter sample is inconsistent: its `GlassesAim.kt`
+  says +Y up / −Z forward (what we use), its mock-device code says +X up / +Z forward. Real glasses decide.
+- Simulated glasses send motion in *our* axis convention, so they prove the app's pipeline, not the axis choice.

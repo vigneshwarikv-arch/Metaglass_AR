@@ -92,7 +92,20 @@ fun AppRoot(
           )
         }
         composable("settings") {
+          val simHead by vm.simHead.collectAsStateWithLifecycle()
           SettingsScreen(
+              sim =
+                  SimControls(
+                      head = simHead,
+                      connected = state.glasses is com.metaglassar.planes.glasses.GlassesStatus.Connected,
+                      onToggle = { vm.setSimulatedGlasses(it) },
+                      onModel = { vm.setSimulatedGlasses(true, it) },
+                      onHead = vm::setSimHead,
+                      onLookAtNearest = vm::simLookAtNearest,
+                      onSayWhatsThatPlane = vm::simSayWhatsThatPlane,
+                      onVoiceLaunch = vm::simVoiceLaunch,
+                      displayPreview = vm::simDisplayPreview,
+                  ),
               state = state,
               scenes = vm.sampleScenes,
               onChange = vm::updateSettings,
