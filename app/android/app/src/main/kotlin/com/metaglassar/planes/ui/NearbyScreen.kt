@@ -201,7 +201,7 @@ fun RadarMap(
     drawCircle(colors.outline, radius = outer, center = c, style = Stroke(1.dp.toPx()))
     drawCircle(colors.outline, radius = outer / 2, center = c, style = Stroke(1.dp.toPx()))
     drawText(measurer, "N", Offset(c.x - 4.dp.toPx(), c.y - outer + 4.dp.toPx()), TextStyle(fontSize = 12.sp, color = colors.primary, fontWeight = FontWeight.Bold))
-    drawText(measurer, Units.distanceText(radiusKm / 2, unit), Offset(c.x + 4.dp.toPx(), c.y - outer / 2), labelStyle)
+    drawText(measurer, Units.distanceText(radiusKm / 2, unit), Offset(c.x + 4.dp.toPx(), c.y + outer / 2 + 2.dp.toPx()), labelStyle)
 
     // Phone heading wedge (Point screen).
     headingDeg?.let { h ->

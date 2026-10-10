@@ -55,14 +55,21 @@ data class UiState(
     val nearby: List<SeenAircraft> = emptyList(),
     val feed: FeedState = FeedState.Loading,
     val attributions: List<String> = emptyList(),
-    /** Phone pointing direction, true north. */
-    val pointing: Pointing? = null,
-    val compassUnreliable: Boolean = false,
     val compassAvailable: Boolean = true,
-    val selection: Selection? = null,
     val glasses: GlassesStatus = GlassesStatus.NotRegistered,
     val lastAnswer: Answer? = null,
     val hasOpenSkyCredentials: Boolean = false,
+)
+
+/**
+ * Compass-driven state, kept apart from [UiState] because it changes many times a second:
+ * only the Point screen reads it, so the Nearby list and map don't redraw on every sensor tick.
+ */
+data class PointUi(
+    /** Phone pointing direction, true north. */
+    val pointing: Pointing? = null,
+    val compassUnreliable: Boolean = false,
+    val selection: Selection? = null,
 )
 
 class MainViewModel(app: Application) : AndroidViewModel(app) {
@@ -75,6 +82,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
               compassAvailable = graph.orientation.available,
           ))
   val state: StateFlow<UiState> = _state.asStateFlow()
+  private val _point = MutableStateFlow(PointUi())
+  val point: StateFlow<PointUi> = _point.asStateFlow()
   val sampleScenes = graph.sampleScenes
 
   private val locationPermission = MutableStateFlow(false)
@@ -168,9 +177,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
           nearby = TargetSelector.nearby(point, aircraft, radiusKm),
           feed = feed,
           attributions = listOfNotNull(result.attribution, lookup.attribution).distinct(),
-          selection = it.pointing?.let { p -> TargetSelector.select(point, aircraft, p) },
       )
     }
+    _point.update { it.copy(selection = it.pointing?.let { p -> TargetSelector.select(point, aircraft, p) }) }
   }
 
   private suspend fun runOrientation() {
@@ -178,13 +187,12 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
       val user = (state.value.location as? LocationState.Known)?.point
       val trueBearing = Geo.normalizeDeg(reading.magneticPointing.bearingDeg + (user?.let(::declinationAt) ?: 0.0))
       val pointing = reading.magneticPointing.copy(bearingDeg = trueBearing)
-      _state.update {
-        it.copy(
-            pointing = pointing,
-            compassUnreliable = reading.accuracy <= android.hardware.SensorManager.SENSOR_STATUS_ACCURACY_LOW,
-            selection = user?.let { u -> TargetSelector.select(u, allAircraft, pointing) },
-        )
-      }
+      _point.value =
+          PointUi(
+              pointing = pointing,
+              compassUnreliable = reading.accuracy <= android.hardware.SensorManager.SENSOR_STATUS_ACCURACY_LOW,
+              selection = user?.let { u -> TargetSelector.select(u, allAircraft, pointing) },
+          )
     }
   }
 
@@ -195,7 +203,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
   private fun clearAircraft() {
     allAircraft = emptyList()
-    _state.update { it.copy(nearby = emptyList(), selection = null, attributions = emptyList()) }
+    _state.update { it.copy(nearby = emptyList(), attributions = emptyList()) }
+    _point.update { it.copy(selection = null) }
   }
 
   fun aircraft(icao24: String): SeenAircraft? = state.value.nearby.firstOrNull { it.aircraft.icao24 == icao24 }
@@ -212,7 +221,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
           if (user == null) {
             Answer("I don't know where you are yet. Turn on location and try again.", null)
           } else {
-            val pointing = graph.glasses.headPointing.value ?: s.pointing
+            val pointing = graph.glasses.headPointing.value ?: point.value.pointing
             val selection =
                 if (pointing != null) TargetSelector.select(user, allAircraft, pointing)
                 else nearestAirborne(user)

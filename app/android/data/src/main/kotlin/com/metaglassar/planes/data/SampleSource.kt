@@ -27,14 +27,16 @@ data class SampleScene(
 )
 
 /**
- * Offline data connector backed by `sample/flights.json`. Planes move along their tracks in real
- * time and the recording loops every [loopSeconds], so maps and pointing feel alive without internet.
+ * Offline data connector backed by `sample/flights.json`. Planes drift along their tracks at
+ * [speedFactor] of real speed and the recording loops every [loopSeconds]: they visibly move, but
+ * stay within a few km of their recorded positions so testers can always find them.
  * In sample mode the app also uses the scene's centre as the user's location.
  */
 class SampleSource(
     val scene: SampleScene,
     private val clock: () -> Long = System::currentTimeMillis,
-    private val loopSeconds: Long = 120,
+    private val loopSeconds: Long = 300,
+    private val speedFactor: Double = 0.1,
 ) : AircraftSource, AircraftInfoLookup {
 
   override val name = "Sample data — ${scene.name}"
@@ -48,7 +50,7 @@ class SampleSource(
 
   /** Positions advanced by elapsed time along each aircraft's track. */
   fun snapshot(): List<Aircraft> {
-    val t = ((clock() - startMs) / 1000.0) % loopSeconds
+    val t = ((clock() - startMs) / 1000.0) % loopSeconds * speedFactor
     return scene.aircraft.map { a ->
       val speed = a.speedMs ?: 0.0
       val track = a.trackDeg

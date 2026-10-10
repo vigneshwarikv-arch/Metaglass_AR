@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.contentDescription
@@ -28,10 +29,10 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metaglassar.planes.LocationState
+import com.metaglassar.planes.PointUi
 import com.metaglassar.planes.UiState
 import com.metaglassar.planes.core.CompassPoint
 import com.metaglassar.planes.core.Geo
-import com.metaglassar.planes.core.Pointing
 import com.metaglassar.planes.core.Selection
 import com.metaglassar.planes.core.TargetSelector
 import com.metaglassar.planes.core.TurnDirection
@@ -43,7 +44,7 @@ import kotlin.math.roundToInt
 private const val HALF_FOV_DEG = 35.0
 
 @Composable
-fun PointScreen(state: UiState, onOpen: (String) -> Unit, onAsk: () -> Unit, onRequestLocation: () -> Unit) {
+fun PointScreen(state: UiState, point: PointUi, onOpen: (String) -> Unit, onAsk: () -> Unit, onRequestLocation: () -> Unit) {
   if (state.location !is LocationState.Known) {
     return EmptyState(
         "Location needed",
@@ -61,16 +62,16 @@ fun PointScreen(state: UiState, onOpen: (String) -> Unit, onAsk: () -> Unit, onR
   ) {
     Text("Hold your phone up and point the back of it at a plane.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
-    val p = state.pointing
-    SkyView(state, p, Modifier.fillMaxWidth())
+    val p = point.pointing
+    SkyView(state, point, Modifier.fillMaxWidth())
 
     Text(
-        p?.let { "Facing ${it.bearingDeg.roundToInt()}° ${CompassPoint.of(it.bearingDeg).short} · ${it.elevationDeg.roundToInt()}° ${if (it.elevationDeg >= 0) "up" else "down"}" }
+        p?.let { "Facing ${it.bearingDeg.roundToInt()}° ${CompassPoint.of(it.bearingDeg).short} · ${kotlin.math.abs(it.elevationDeg).roundToInt()}° ${if (it.elevationDeg >= 0) "up" else "down"}" }
             ?: "Reading compass…",
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.SemiBold,
     )
-    if (state.compassUnreliable) {
+    if (point.compassUnreliable) {
       Text(
           "Compass needs calibrating: move your phone in a figure-of-eight a few times.",
           style = MaterialTheme.typography.bodySmall,
@@ -78,7 +79,7 @@ fun PointScreen(state: UiState, onOpen: (String) -> Unit, onAsk: () -> Unit, onR
       )
     }
 
-    when (val sel = state.selection) {
+    when (val sel = point.selection) {
       is Selection.Hit -> ResultCard("That's", sel.target.aircraft.titleText(), sel.target, state) { onOpen(sel.target.aircraft.icao24) }
       is Selection.Miss -> {
         val turn =
@@ -137,11 +138,16 @@ private fun ResultCard(
  * each airborne plane placed by how far left/right and up/down it is from where you point.
  */
 @Composable
-private fun SkyView(state: UiState, pointing: Pointing?, modifier: Modifier) {
+private fun SkyView(state: UiState, point: PointUi, modifier: Modifier) {
   val colors = MaterialTheme.colorScheme
   val measurer = rememberTextMeasurer()
-  val highlight = (state.selection as? Selection.Hit)?.target?.aircraft?.icao24
-  Canvas(modifier.aspectRatio(1.3f).semantics { contentDescription = "Sky view in the direction the phone points" }) {
+  val pointing = point.pointing
+  val highlight = (point.selection as? Selection.Hit)?.target?.aircraft?.icao24
+  Canvas(
+      modifier
+          .aspectRatio(1.3f)
+          .clipToBounds()
+          .semantics { contentDescription = "Sky view in the direction the phone points" }) {
     drawRoundRect(colors.surface, cornerRadius = androidx.compose.ui.geometry.CornerRadius(16.dp.toPx()))
     val c = Offset(size.width / 2, size.height / 2)
     val pxPerDeg = (size.width / 2) / HALF_FOV_DEG.toFloat()

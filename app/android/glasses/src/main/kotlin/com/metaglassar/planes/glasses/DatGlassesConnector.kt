@@ -34,6 +34,7 @@ import com.metaglassar.planes.core.Answer
 import com.metaglassar.planes.core.HeadAim
 import com.metaglassar.planes.core.Pointing
 import com.metaglassar.planes.core.Vec3
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -67,7 +68,15 @@ class DatGlassesConnector(
 ) : GlassesConnector {
 
   private val appContext = context.applicationContext
-  private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+  // A glasses failure must never take down the phone app: log it and show it in Settings.
+  private val scope =
+      CoroutineScope(
+          SupervisorJob() +
+              Dispatchers.Main.immediate +
+              CoroutineExceptionHandler { _, e ->
+                Log.e(TAG, "glasses connector error", e)
+                _status.value = GlassesStatus.Error(e.message ?: e.javaClass.simpleName)
+              })
   private val headAim = HeadAim()
   private val spoken = SpokenOutput(appContext)
 
@@ -90,7 +99,11 @@ class DatGlassesConnector(
   private var deviceName: String? = null
   private var deviceHasDisplay = false
   private var voiceJob: Job? = null
+  private val metadataJobs = mutableMapOf<DeviceIdentifier, Job>()
+  private val connectedDevices = mutableSetOf<DeviceIdentifier>()
 
+  // Keep this init block AFTER all fields: the scope dispatches immediately, so code launched here
+  // runs before later field initializers would.
   init {
     Wearables.initialize(appContext).onFailure { error, _ ->
       _status.value = GlassesStatus.Unavailable(error.description)
@@ -121,9 +134,6 @@ class DatGlassesConnector(
       }
     }
   }
-
-  private val metadataJobs = mutableMapOf<DeviceIdentifier, Job>()
-  private val connectedDevices = mutableSetOf<DeviceIdentifier>()
 
   private suspend fun observeDevices() {
     Wearables.devices.collect { ids ->

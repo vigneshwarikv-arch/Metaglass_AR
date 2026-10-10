@@ -69,6 +69,7 @@ class PhoneOrientationSource(context: Context) {
     var n = 0.0
     var u = 0.0
     var first = true
+    var lastSent: Reading? = null
     val listener =
         object : SensorEventListener {
           override fun onSensorChanged(event: SensorEvent) {
@@ -85,14 +86,21 @@ class PhoneOrientationSource(context: Context) {
             val len = sqrt(e * e + n * n + u * u).takeIf { it > 1e-6 } ?: return
             val bearing = Geo.normalizeDeg(Math.toDegrees(atan2(e, n)))
             val elevation = Math.toDegrees(asin((u / len).coerceIn(-1.0, 1.0)))
-            trySend(Reading(Pointing(bearing, elevation), accuracy))
+            // Only report real changes (half a degree), so the UI redraws a few times a second, not 50.
+            val last = lastSent
+            if (last != null && last.accuracy == accuracy &&
+                kotlin.math.abs(Geo.signedBearingDiff(last.magneticPointing.bearingDeg, bearing)) < 0.5 &&
+                kotlin.math.abs(last.magneticPointing.elevationDeg - elevation) < 0.5) return
+            val reading = Reading(Pointing(bearing, elevation), accuracy)
+            lastSent = reading
+            trySend(reading)
           }
 
           override fun onAccuracyChanged(sensor: Sensor, acc: Int) {
             accuracy = acc
           }
         }
-    sm.registerListener(listener, s, SensorManager.SENSOR_DELAY_GAME)
+    sm.registerListener(listener, s, SensorManager.SENSOR_DELAY_UI)
     awaitClose { sm.unregisterListener(listener) }
   }
 }

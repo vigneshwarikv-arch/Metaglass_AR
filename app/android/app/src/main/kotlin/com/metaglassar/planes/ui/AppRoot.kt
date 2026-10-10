@@ -82,8 +82,10 @@ fun AppRoot(
           )
         }
         composable("point") {
+          val point by vm.point.collectAsStateWithLifecycle()
           PointScreen(
               state = state,
+              point = point,
               onOpen = { nav.navigate("details/$it") },
               onAsk = { vm.ask() },
               onRequestLocation = onRequestLocation,
