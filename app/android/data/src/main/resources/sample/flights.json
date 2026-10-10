@@ -1,0 +1,59 @@
+{
+  "_note": "SYNTHETIC sample data for offline use and tests. Not real flights: positions, transponder codes and registrations are made up (icao24 starts with 'sample', registrations contain 'SMP' or start with N0, which are not valid real registrations). Airlines and airports are real names so the app reads naturally.",
+  "airports": {
+    "MAA": { "icao": "VOMM", "iata": "MAA", "name": "Chennai International Airport", "city": "Chennai" },
+    "DEL": { "icao": "VIDP", "iata": "DEL", "name": "Indira Gandhi International Airport", "city": "Delhi" },
+    "BOM": { "icao": "VABB", "iata": "BOM", "name": "Chhatrapati Shivaji Maharaj International Airport", "city": "Mumbai" },
+    "BLR": { "icao": "VOBL", "iata": "BLR", "name": "Kempegowda International Airport", "city": "Bengaluru" },
+    "CJB": { "icao": "VOCB", "iata": "CJB", "name": "Coimbatore International Airport", "city": "Coimbatore" },
+    "HYD": { "icao": "VOHS", "iata": "HYD", "name": "Rajiv Gandhi International Airport", "city": "Hyderabad" },
+    "DXB": { "icao": "OMDB", "iata": "DXB", "name": "Dubai International Airport", "city": "Dubai" },
+    "SIN": { "icao": "WSSS", "iata": "SIN", "name": "Singapore Changi Airport", "city": "Singapore" },
+    "SJC": { "icao": "KSJC", "iata": "SJC", "name": "San Jose International Airport", "city": "San Jose" },
+    "SFO": { "icao": "KSFO", "iata": "SFO", "name": "San Francisco International Airport", "city": "San Francisco" },
+    "OAK": { "icao": "KOAK", "iata": "OAK", "name": "Oakland International Airport", "city": "Oakland" },
+    "LAS": { "icao": "KLAS", "iata": "LAS", "name": "Harry Reid International Airport", "city": "Las Vegas" },
+    "SEA": { "icao": "KSEA", "iata": "SEA", "name": "Seattle-Tacoma International Airport", "city": "Seattle" },
+    "DFW": { "icao": "KDFW", "iata": "DFW", "name": "Dallas Fort Worth International Airport", "city": "Dallas" },
+    "MSP": { "icao": "KMSP", "iata": "MSP", "name": "Minneapolis-Saint Paul International Airport", "city": "Minneapolis" },
+    "HND": { "icao": "RJTT", "iata": "HND", "name": "Tokyo Haneda Airport", "city": "Tokyo" },
+    "ICN": { "icao": "RKSI", "iata": "ICN", "name": "Incheon International Airport", "city": "Seoul" },
+    "LAX": { "icao": "KLAX", "iata": "LAX", "name": "Los Angeles International Airport", "city": "Los Angeles" }
+  },
+  "scenes": [
+    {
+      "id": "chennai",
+      "name": "Chennai, India",
+      "center": { "lat": 13.0067, "lon": 80.2206, "altitudeM": 10 },
+      "flights": [
+        { "icao24": "sample01", "callsign": "IGO2045", "bearingDeg": 2, "distanceKm": 25, "altitudeFt": 32000, "speedKt": 450, "trackDeg": 182, "verticalRateFpm": -800, "airline": "IndiGo", "typeCode": "A320", "typeName": "Airbus A320", "registration": "VT-SMPA", "from": "DEL", "to": "MAA" },
+        { "icao24": "sample02", "callsign": "AIC540", "bearingDeg": 330, "distanceKm": 14, "altitudeFt": 9500, "speedKt": 280, "trackDeg": 340, "verticalRateFpm": 2200, "airline": "Air India", "typeCode": "A20N", "typeName": "Airbus A320neo", "registration": "VT-SMPB", "from": "MAA", "to": "DEL" },
+        { "icao24": "sample03", "callsign": "IGO6123", "bearingDeg": 255, "distanceKm": 31, "altitudeFt": 13000, "speedKt": 240, "trackDeg": 262, "verticalRateFpm": 1200, "airline": "IndiGo", "typeCode": "AT76", "typeName": "ATR 72-600", "registration": "VT-SMPC", "from": "MAA", "to": "CJB" },
+        { "icao24": "sample04", "callsign": "UAE544", "bearingDeg": 300, "distanceKm": 44, "altitudeFt": 21000, "speedKt": 390, "trackDeg": 122, "verticalRateFpm": -1500, "airline": "Emirates", "typeCode": "B77W", "typeName": "Boeing 777-300ER", "registration": "A6-SMPD", "from": "DXB", "to": "MAA" },
+        { "icao24": "sample05", "callsign": "SIA528", "bearingDeg": 135, "distanceKm": 36, "altitudeFt": 18000, "speedKt": 360, "trackDeg": 300, "verticalRateFpm": -1300, "airline": "Singapore Airlines", "typeCode": "A359", "typeName": "Airbus A350-900", "registration": "9V-SMPE", "from": "SIN", "to": "MAA" },
+        { "icao24": "sample06", "callsign": "AKJ1201", "bearingDeg": 315, "distanceKm": 48, "altitudeFt": 35000, "speedKt": 470, "trackDeg": 318, "verticalRateFpm": 0, "airline": "Akasa Air", "typeCode": "B38M", "typeName": "Boeing 737 MAX 8", "registration": "VT-SMPF", "from": "MAA", "to": "BOM" },
+        { "icao24": "sample07", "callsign": "AXB1677", "bearingDeg": 60, "distanceKm": 20, "altitudeFt": 7000, "speedKt": 250, "trackDeg": 240, "verticalRateFpm": -900, "airline": "Air India Express", "typeCode": "B38M", "typeName": "Boeing 737 MAX 8", "registration": "VT-SMPG", "from": "HYD", "to": "MAA" },
+        { "icao24": "sample08", "callsign": "VTSMP", "bearingDeg": 190, "distanceKm": 7, "altitudeFt": 2500, "speedKt": 95, "trackDeg": 20, "verticalRateFpm": 0, "typeCode": "C172", "typeName": "Cessna 172", "registration": "VT-SMPH" },
+        { "icao24": "sample09", "callsign": "IGO417", "bearingDeg": 210, "distanceKm": 12.5, "altitudeFt": 0, "speedKt": 0, "trackDeg": 70, "onGround": true, "airline": "IndiGo", "typeCode": "A21N", "typeName": "Airbus A321neo", "registration": "VT-SMPI", "from": "MAA", "to": "BLR" },
+        { "icao24": "sample10", "callsign": null, "bearingDeg": 100, "distanceKm": 70, "altitudeFt": 28000, "speedKt": 430, "trackDeg": 10, "verticalRateFpm": 0 }
+      ]
+    },
+    {
+      "id": "milpitas",
+      "name": "Milpitas, California",
+      "center": { "lat": 37.4323, "lon": -121.8996, "altitudeM": 15 },
+      "flights": [
+        { "icao24": "sample21", "callsign": "SWA1234", "bearingDeg": 235, "distanceKm": 9, "altitudeFt": 5500, "speedKt": 230, "trackDeg": 120, "verticalRateFpm": 2400, "airline": "Southwest Airlines", "typeCode": "B38M", "typeName": "Boeing 737 MAX 8", "registration": "N0SMPA", "from": "SJC", "to": "LAS" },
+        { "icao24": "sample22", "callsign": "UAL837", "bearingDeg": 305, "distanceKm": 38, "altitudeFt": 24000, "speedKt": 420, "trackDeg": 300, "verticalRateFpm": 1800, "airline": "United Airlines", "typeCode": "B789", "typeName": "Boeing 787-9", "registration": "N0SMPB", "from": "SFO", "to": "HND" },
+        { "icao24": "sample23", "callsign": "ASA332", "bearingDeg": 350, "distanceKm": 16, "altitudeFt": 9000, "speedKt": 260, "trackDeg": 160, "verticalRateFpm": -1100, "airline": "Alaska Airlines", "typeCode": "B739", "typeName": "Boeing 737-900", "registration": "N0SMPC", "from": "SEA", "to": "SJC" },
+        { "icao24": "sample24", "callsign": "AAL2211", "bearingDeg": 80, "distanceKm": 42, "altitudeFt": 19000, "speedKt": 380, "trackDeg": 285, "verticalRateFpm": -1600, "airline": "American Airlines", "typeCode": "A321", "typeName": "Airbus A321", "registration": "N0SMPD", "from": "DFW", "to": "SFO" },
+        { "icao24": "sample25", "callsign": "DAL1588", "bearingDeg": 40, "distanceKm": 26, "altitudeFt": 14000, "speedKt": 320, "trackDeg": 230, "verticalRateFpm": -1400, "airline": "Delta Air Lines", "typeCode": "A21N", "typeName": "Airbus A321neo", "registration": "N0SMPE", "from": "MSP", "to": "SJC" },
+        { "icao24": "sample26", "callsign": "JAL1", "bearingDeg": 290, "distanceKm": 47, "altitudeFt": 36000, "speedKt": 480, "trackDeg": 110, "verticalRateFpm": 0, "airline": "Japan Airlines", "typeCode": "B788", "typeName": "Boeing 787-8", "registration": "JA-SMPF", "from": "HND", "to": "LAX" },
+        { "icao24": "sample27", "callsign": "N0SMPG", "bearingDeg": 175, "distanceKm": 5, "altitudeFt": 1800, "speedKt": 100, "trackDeg": 330, "verticalRateFpm": 0, "typeCode": "C172", "typeName": "Cessna 172", "registration": "N0SMPG" },
+        { "icao24": "sample28", "callsign": "N0SMPH", "bearingDeg": 20, "distanceKm": 3, "altitudeFt": 900, "speedKt": 110, "trackDeg": 260, "verticalRateFpm": 0, "typeCode": "EC35", "typeName": "Airbus H135 helicopter", "registration": "N0SMPH" },
+        { "icao24": "sample29", "callsign": "SWA889", "bearingDeg": 200, "distanceKm": 8.5, "altitudeFt": 0, "speedKt": 0, "trackDeg": 300, "onGround": true, "airline": "Southwest Airlines", "typeCode": "B737", "typeName": "Boeing 737-700", "registration": "N0SMPI", "from": "SJC", "to": "OAK" },
+        { "icao24": "sample30", "callsign": "KAL23", "bearingDeg": 320, "distanceKm": 75, "altitudeFt": 30000, "speedKt": 460, "trackDeg": 120, "verticalRateFpm": -500, "airline": "Korean Air", "typeCode": "B77W", "typeName": "Boeing 777-300ER", "registration": "HL-SMPJ", "from": "ICN", "to": "SFO" }
+      ]
+    }
+  ]
+}
