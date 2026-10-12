@@ -1,0 +1,46 @@
+name: iOS
+# Builds and tests the iPhone app on a GitHub-hosted Mac, so changes can be checked without one.
+on:
+  push:
+    paths: ['app/ios/**', 'app/android/data/src/main/resources/sample/flights.json', '.github/workflows/ios.yml']
+  pull_request:
+    paths: ['app/ios/**', 'app/android/data/src/main/resources/sample/flights.json', '.github/workflows/ios.yml']
+  workflow_dispatch:
+
+jobs:
+  planeskit:
+    name: Engine tests (PlanesKit)
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Sample flights match Android
+        run: cmp app/android/data/src/main/resources/sample/flights.json app/ios/PlanesKit/Sources/PlanesData/Resources/flights.json
+      - name: swift test
+        working-directory: app/ios/PlanesKit
+        run: swift test
+
+  app:
+    name: Build iPhone app
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate Xcode project
+        working-directory: app/ios
+        run: |
+          cp Config/Secrets.example.xcconfig Config/Secrets.xcconfig
+          xcodegen generate
+      - name: Build for iOS Simulator (no signing)
+        working-directory: app/ios
+        run: |
+          xcodebuild -project Planes.xcodeproj -scheme Planes \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO build | tail -n 80
+          exit ${PIPESTATUS[0]}
