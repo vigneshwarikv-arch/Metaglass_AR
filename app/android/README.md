@@ -156,6 +156,7 @@ Do this outdoors with planes in view, or near an airport. Note the glasses model
   speak-on-glasses API. Needs checking on real glasses (checklist above).
 - **Head-direction axes** come from Meta's BirdSpotter sample measurements; confirm on our pair.
 - **Compass accuracy**: phones are often 5–10° off near metal or cars. The pointing tolerance is ±12°.
-- **Head-direction axes are uncertain.** Meta's BirdSpotter sample is inconsistent: its `GlassesAim.kt`
-  says +Y up / −Z forward (what we use), its mock-device code says +X up / +Z forward. Real glasses decide.
+- **Head-direction axes: +X up, +Z forward.** Meta's iOS BirdSpotter sample measured this on worn
+  glasses and calls the older "+Y up / −Z forward" guess (still in an Android sample comment) wrong.
+  Still confirm on our pair: look level → about 0°; look up → positive angle (checklist above).
 - Simulated glasses send motion in *our* axis convention, so they prove the app's pipeline, not the axis choice.
