@@ -1,0 +1,16 @@
+// Build settings shared by Debug and Release. Machine-specific values and secrets go in
+// Secrets.xcconfig (git-ignored; copy Secrets.example.xcconfig to start).
+
+// Meta Wearables Developer Center IDs. "0" = Developer Mode (attestation skipped).
+META_APP_ID = 0
+CLIENT_TOKEN = 0
+
+// Optional OpenSky API client. Empty = anonymous access (about 400 updates a day).
+OPENSKY_CLIENT_ID =
+OPENSKY_CLIENT_SECRET =
+
+// Your Apple Developer Team ID (Xcode > Signing & Capabilities). Needed to run on an iPhone.
+DEVELOPMENT_TEAM =
+CODE_SIGN_STYLE = Automatic
+
+#include? "Secrets.xcconfig"

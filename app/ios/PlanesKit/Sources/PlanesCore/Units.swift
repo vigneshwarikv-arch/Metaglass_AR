@@ -1,7 +1,7 @@
 import Foundation
 
 /// Distance units. Altitude is always in feet.
-public enum DistanceUnit: String, CaseIterable, Sendable { case kilometres, miles }
+public enum DistanceUnit: String, CaseIterable, Codable, Sendable { case kilometres, miles }
 
 public enum Units {
   public static let feetPerMetre = 3.28084
