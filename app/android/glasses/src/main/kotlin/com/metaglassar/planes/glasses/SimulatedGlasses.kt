@@ -63,7 +63,7 @@ class SimulatedGlasses(context: Context) {
 
   /**
    * Points the simulated head: [magneticBearingDeg] clockwise from magnetic north, [elevationDeg]
-   * above the horizon. Samples use the axis convention in core/HeadAim (+Y up, −Z forward, +X right),
+   * above the horizon. Samples use the axis convention in core/HeadAim (+X up, +Y right, +Z forward),
    * so the app reads back exactly this direction.
    */
   fun setHead(magneticBearingDeg: Double, elevationDeg: Double) {
@@ -72,13 +72,13 @@ class SimulatedGlasses(context: Context) {
     val e = Math.toRadians(elevationDeg)
     val gravity = 9.80665
     val field = 40.0 // µT, horizontal component only
-    val accel = Vector3(0f, (gravity * cos(e)).toFloat(), (-gravity * sin(e)).toFloat())
+    val accel = Vector3((gravity * cos(e)).toFloat(), 0f, (gravity * sin(e)).toFloat())
     // Magnetic north in the glasses' frame for a head facing b and tilted up e.
     val north =
         Vector3(
-            (-field * sin(b)).toFloat(),
             (-field * cos(b) * sin(e)).toFloat(),
-            (-field * cos(b) * cos(e)).toFloat(),
+            (-field * sin(b)).toFloat(),
+            (field * cos(b) * cos(e)).toFloat(),
         )
     val intervalNs = 100_000_000L // 10 Hz
     val samples = List(10) { i -> MotionSample(i * intervalNs, accel, Vector3(0f, 0f, 0f), north, null, MotionSource.GLASSES) }

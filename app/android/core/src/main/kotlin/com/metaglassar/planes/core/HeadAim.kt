@@ -27,11 +27,12 @@ data class Vec3(val x: Double, val y: Double, val z: Double) {
  * Standard tilt-compensated compass: at rest the accelerometer reads "up" (reaction to gravity);
  * the magnetic field with its vertical part removed is magnetic north; north × up is east.
  *
- * Axis convention: Meta's BirdSpotter sample (meta-wearables-dat-android) measured on worn glasses
- * that +Y is up and −Z is forward. TODO(glasses): re-check on our test pair — look level at the
- * horizon and confirm the app reports ~0° elevation; if not, change [forward].
+ * Axis convention: +X up, +Y lateral, +Z forward. Meta's iOS BirdSpotter sample measured this on a
+ * worn pair (and calls the earlier "+Y up, −Z forward" guess wrong); its Android mock-device code
+ * agrees, though an older Android comment still says the opposite. TODO(glasses): re-check on our
+ * pair — look level at the horizon and confirm ~0° elevation; looking up must give a positive angle.
  */
-class HeadAim(private val forward: Vec3 = Vec3(0.0, 0.0, -1.0)) {
+class HeadAim(private val forward: Vec3 = Vec3(0.0, 0.0, 1.0)) {
 
   /** Degrees above the horizon, or null in free fall. */
   fun elevationDeg(acceleration: Vec3): Double? {

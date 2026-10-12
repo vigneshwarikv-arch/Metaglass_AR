@@ -1,0 +1,7 @@
+Config/Secrets.xcconfig
+Planes.xcodeproj/
+*.xcworkspace/
+xcuserdata/
+.build/
+.swiftpm/
+DerivedData/

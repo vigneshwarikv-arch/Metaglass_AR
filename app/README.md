@@ -1,6 +1,7 @@
 # app/
 
-Source code: phone app + Meta glasses integration.
+Source code: phone apps + Meta glasses integration. Both apps share the same design (engine +
+data connectors + output connectors) and give the same answers.
 
-- [`android/`](android/README.md) — MVP 1 Android app (Kotlin, Jetpack Compose) with Meta glasses support via DAT. Setup, OpenSky credentials, glasses testing checklist: see its README.
-- iOS: later.
+- [`android/`](android/README.md) — Android app (Kotlin, Jetpack Compose). Setup, OpenSky credentials, glasses test checklist.
+- [`ios/`](ios/README.md) — iPhone app (Swift, SwiftUI). Needs a Mac with Xcode to install on an iPhone.

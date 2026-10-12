@@ -1,0 +1,58 @@
+# XcodeGen spec for the iPhone app. Generate the Xcode project with:
+#   brew install xcodegen && xcodegen generate
+# (Planes.xcodeproj is generated, not committed: edit this file instead of project settings.)
+name: Planes
+options:
+  bundleIdPrefix: com.metaglassar
+  deploymentTarget:
+    iOS: "17.2"
+configFiles:
+  Debug: Config/App.xcconfig
+  Release: Config/App.xcconfig
+packages:
+  # Meta Wearables Device Access Toolkit (glasses). Using it means agreeing to the Meta Wearables
+  # Developer Terms: https://wearables.developer.meta.com/terms
+  MWDAT:
+    url: https://github.com/facebook/meta-wearables-dat-ios
+    exactVersion: 1.0.1
+  PlanesKit:
+    path: PlanesKit
+targets:
+  Planes:
+    type: application
+    platform: iOS
+    sources:
+      - path: Planes
+    settings:
+      base:
+        PRODUCT_NAME: Planes
+        PRODUCT_BUNDLE_IDENTIFIER: com.metaglassar.planes
+        INFOPLIST_FILE: Planes/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1"
+        MARKETING_VERSION: 0.1.0
+        CURRENT_PROJECT_VERSION: 1
+        ENABLE_PREVIEWS: YES
+    dependencies:
+      - package: MWDAT
+        product: MWDATCore
+      - package: MWDAT
+        product: MWDATMotion
+      - package: MWDAT
+        product: MWDATSpeech
+      - package: MWDAT
+        product: MWDATDisplay
+      - package: MWDAT
+        product: MWDATMockDevice
+      - package: PlanesKit
+        product: PlanesCore
+      - package: PlanesKit
+        product: PlanesData
+schemes:
+  Planes:
+    build:
+      targets:
+        Planes: all
+    run:
+      config: Debug
