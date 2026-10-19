@@ -2,7 +2,7 @@
 
 Working repo for a voice-first aviation app for smart glasses and phones. **Brand name: TBD** ([options](docs/10-naming.md)).
 
-> Status: **Planning → building MVP 1** (October 2026).
+> Status: **MVP 1 built (Android + iPhone); phone features tested on iPhone, glasses test pending** (October 2026). See [docs/11](docs/11-mvp1-test-status.md).
 
 ## The idea
 
@@ -32,6 +32,7 @@ MVP 1 launches first. Pilot mode is announced at launch and goes through closed 
 - [08 — MVP 2: pilot mode](docs/08-mvp2-pilot-mode.md)
 - [09 — Background: ADS-B, data sources, devices](docs/09-data-and-devices.md)
 - [10 — Naming (undecided)](docs/10-naming.md)
+- [11 — MVP 1 test status](docs/11-mvp1-test-status.md)
 
 **Research**
 - [01 — Platform research: building for Meta glasses](docs/01-platform-research.md)
