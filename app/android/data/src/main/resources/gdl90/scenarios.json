@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "note": "Synthetic GDL 90 scenarios (not real flights). One copy is shared by the Android app (this file), the iPhone app (app/ios/PlanesKit/Sources/PlanesData/Resources/scenarios.json, CI checks they match) and tools/gdl90-replay. Kinds: meet = flies from relBearingDeg/distNm (relative to ownship's track) to a point missNm ahead of ownship at meetSec; orbit = circles centerLat/centerLon; ground = taxis; shadow = a TIS-B copy of ownship (must never be called out).",
+  "scenarios": [
+    {
+      "id": "converging",
+      "name": "Traffic converging from 2 o'clock",
+      "durationSec": 180,
+      "ownship": { "icao": "a0b1c2", "callsign": "N123AB", "lat": 37.3500, "lon": -121.9000, "altFt": 3500, "trackDeg": 330, "gsKt": 100 },
+      "traffic": [
+        { "kind": "meet", "icao": "a44e2b", "callsign": "N4421K", "relBearingDeg": 60, "distNm": 4.5, "relAltFt": 500, "meetSec": 140, "missNm": 0.4, "vsFpm": 0 },
+        { "kind": "meet", "icao": "a2f9c0", "callsign": "N88SR", "relBearingDeg": 300, "distNm": 6.5, "relAltFt": -1200, "meetSec": 200, "missNm": 2.5, "vsFpm": 0 },
+        { "kind": "shadow", "icao": "a0b1c3" }
+      ]
+    },
+    {
+      "id": "overtaking",
+      "name": "Traffic overtaking from behind",
+      "durationSec": 150,
+      "ownship": { "icao": "a0b1c2", "callsign": "N123AB", "lat": 37.3000, "lon": -121.8000, "altFt": 4500, "trackDeg": 90, "gsKt": 95 },
+      "traffic": [
+        { "kind": "meet", "icao": "a7c3d1", "callsign": "N512RV", "relBearingDeg": 185, "distNm": 2.0, "relAltFt": -400, "meetSec": 100, "missNm": 0.3, "vsFpm": 300 }
+      ]
+    },
+    {
+      "id": "pattern",
+      "name": "Busy pattern near Palo Alto (KPAO)",
+      "durationSec": 240,
+      "ownship": { "icao": "a0b1c2", "callsign": "N123AB", "lat": 37.4100, "lon": -122.0500, "altFt": 1500, "trackDeg": 315, "gsKt": 90 },
+      "traffic": [
+        { "kind": "orbit", "icao": "a1111a", "callsign": "N731PA", "centerLat": 37.4611, "centerLon": -122.1150, "radiusNm": 0.9, "gsKt": 80, "altFt": 800, "clockwise": false, "startDeg": 90 },
+        { "kind": "orbit", "icao": "a2222b", "callsign": "N4567C", "centerLat": 37.4611, "centerLon": -122.1150, "radiusNm": 0.9, "gsKt": 75, "altFt": 800, "clockwise": false, "startDeg": 250 },
+        { "kind": "orbit", "icao": "a3333c", "callsign": "N22TW", "centerLat": 37.4611, "centerLon": -122.1150, "radiusNm": 1.2, "gsKt": 85, "altFt": 1000, "clockwise": false, "startDeg": 10 },
+        { "kind": "ground", "icao": "a4444d", "callsign": "N9PA", "lat": 37.4605, "lon": -122.1140, "trackDeg": 310, "gsKt": 8 },
+        { "kind": "meet", "icao": "a5555e", "callsign": "N3VD", "relBearingDeg": 330, "distNm": 3.5, "relAltFt": -700, "meetSec": 120, "missNm": 1.5, "vsFpm": 700 }
+      ]
+    }
+  ]
+}
