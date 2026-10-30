@@ -37,6 +37,19 @@ class LocationSource(context: Context) {
     awaitClose { lm.removeUpdates(listener) }
   }
 
+  /**
+   * Pilot mode: raw GPS fixes once a second, with the GPS's own speed and course. Caller must hold
+   * ACCESS_FINE_LOCATION.
+   */
+  @SuppressLint("MissingPermission")
+  fun gpsFixes(): Flow<Location> = callbackFlow {
+    val listener = LocationListener { loc -> trySend(loc) }
+    if (lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+      lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1_000L, 0f, listener, Looper.getMainLooper())
+    }
+    awaitClose { lm.removeUpdates(listener) }
+  }
+
   fun anyProviderEnabled(): Boolean =
       lm.isProviderEnabled(LocationManager.GPS_PROVIDER) || lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
 

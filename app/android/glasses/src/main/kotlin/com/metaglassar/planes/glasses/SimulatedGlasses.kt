@@ -90,6 +90,11 @@ class SimulatedGlasses(context: Context) {
     glasses?.services?.speech?.simulateTranscription("what's that plane", true, 1f)
   }
 
+  /** As if the wearer said "Pilot mode off". */
+  fun sayPilotModeOff() {
+    glasses?.services?.speech?.simulateTranscription("pilot mode off", true, 1f)
+  }
+
   /** As if the wearer said "Hey Meta, start [BrandName]". */
   fun voiceLaunch() {
     glasses?.services?.voiceInvocation?.simulateLaunchAppAction()

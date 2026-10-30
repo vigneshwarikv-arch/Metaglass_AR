@@ -8,6 +8,12 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <!-- Meta glasses (DAT sessions run over Bluetooth). -->
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <!-- Pilot mode: keeps GPS, the ADS-B receiver and callouts running with the screen off. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Pilot mode: receive GDL 90 broadcasts from a Wi-Fi ADS-B receiver while the screen is off. -->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
 
     <uses-feature android:name="android.hardware.sensor.compass" android:required="false" />
 
@@ -52,5 +58,10 @@
                 <data android:scheme="metaglassar" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".pilot.PilotService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
     </application>
 </manifest>

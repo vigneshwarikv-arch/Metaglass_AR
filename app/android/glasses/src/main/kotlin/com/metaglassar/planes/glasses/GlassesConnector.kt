@@ -1,6 +1,7 @@
 package com.metaglassar.planes.glasses
 
 import android.app.Activity
+import com.metaglassar.planes.core.AnswerCard
 import com.metaglassar.planes.core.AnswerOutput
 import com.metaglassar.planes.core.Pointing
 import kotlinx.coroutines.flow.Flow
@@ -35,6 +36,12 @@ enum class AskTrigger {
   PHONE_BUTTON,
 }
 
+/** Spoken commands other than the plane question. */
+enum class GlassesCommand {
+  /** "Pilot mode off" — the voice way to leave pilot mode. */
+  PILOT_MODE_OFF,
+}
+
 /**
  * Output connector for smart glasses. The app talks only to this interface; the DAT implementation
  * is [DatGlassesConnector]. Another brand of glasses = another implementation.
@@ -47,6 +54,15 @@ interface GlassesConnector : AnswerOutput {
 
   /** Emits each time the wearer asks "what's that plane?". */
   val askRequests: Flow<AskTrigger>
+
+  /** Emits spoken commands such as "pilot mode off" (needs the glasses microphone). */
+  val commands: Flow<GlassesCommand>
+
+  /** Shows [card] on a glasses display (Ray-Ban Display) without speaking; no-op without a display. */
+  suspend fun showCard(card: AnswerCard)
+
+  /** Speaks [text] (through the glasses' speakers while they are connected). */
+  suspend fun speak(text: String)
 
   /** Starts the glasses SDK. Call once Bluetooth permission is granted (or for simulated glasses). */
   fun start()

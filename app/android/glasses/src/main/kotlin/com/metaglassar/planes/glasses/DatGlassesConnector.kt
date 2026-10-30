@@ -31,6 +31,7 @@ import com.meta.wearable.dat.motion.types.MotionSource
 import com.meta.wearable.dat.speech.Speech
 import com.meta.wearable.dat.speech.addSpeech
 import com.metaglassar.planes.core.Answer
+import com.metaglassar.planes.core.AnswerCard
 import com.metaglassar.planes.core.HeadAim
 import com.metaglassar.planes.core.Pointing
 import com.metaglassar.planes.core.Vec3
@@ -88,6 +89,9 @@ class DatGlassesConnector(
 
   private val _askRequests = MutableSharedFlow<AskTrigger>(extraBufferCapacity = 4)
   override val askRequests: SharedFlow<AskTrigger> = _askRequests.asSharedFlow()
+
+  private val _commands = MutableSharedFlow<GlassesCommand>(extraBufferCapacity = 4)
+  override val commands: SharedFlow<GlassesCommand> = _commands.asSharedFlow()
 
   private var session: DeviceSession? = null
   private var sessionJobs = mutableListOf<Job>()
@@ -292,8 +296,11 @@ class DatGlassesConnector(
           speech = sp
           sessionJobs += scope.launch {
             sp.transcriptions.collect { result ->
-              if (result != null && result.isFinal && QuestionMatcher.isPlaneQuestion(result.text)) {
-                askOnce(AskTrigger.SPOKEN_QUESTION)
+              if (result != null && result.isFinal) {
+                when {
+                  QuestionMatcher.isPilotModeOff(result.text) -> _commands.tryEmit(GlassesCommand.PILOT_MODE_OFF)
+                  QuestionMatcher.isPlaneQuestion(result.text) -> askOnce(AskTrigger.SPOKEN_QUESTION)
+                }
               }
             }
           }
@@ -366,18 +373,25 @@ class DatGlassesConnector(
   // region output
 
   override suspend fun deliver(answer: Answer) {
-    val d = display
-    val card = answer.card
-    if (d != null && displayReady && card != null) {
-      d.sendContent {
-        flexBox(gap = 8, padding = 24, background = FlexBoxBackground.CARD) {
-          text(card.title, style = TextStyle.HEADING)
-          card.route?.let { text(it, style = TextStyle.BODY) }
-          card.meta?.let { text(it, style = TextStyle.BODY, color = TextColor.SECONDARY) }
-        }
-      }.onFailure { error, _ -> Log.w(TAG, "display card failed: ${error.description}") }
-    }
-    spoken.speak(answer.spoken)
+    answer.card?.let { showCard(it) }
+    speak(answer.spoken)
+  }
+
+  /** Same three-line card for MVP 1 answers and the pilot-mode readout (Display.sendContent, as before). */
+  override suspend fun showCard(card: AnswerCard) {
+    val d = display ?: return
+    if (!displayReady) return
+    d.sendContent {
+      flexBox(gap = 8, padding = 24, background = FlexBoxBackground.CARD) {
+        text(card.title, style = TextStyle.HEADING)
+        card.route?.let { text(it, style = TextStyle.BODY) }
+        card.meta?.let { text(it, style = TextStyle.BODY, color = TextColor.SECONDARY) }
+      }
+    }.onFailure { error, _ -> Log.w(TAG, "display card failed: ${error.description}") }
+  }
+
+  override suspend fun speak(text: String) {
+    spoken.speak(text)
   }
 
   /** Waits until glasses are connected (used by tests/tools); not needed by the app. */
@@ -396,4 +410,9 @@ object QuestionMatcher {
       Regex("""\b(what|which|whats|what's)\b.{0,12}\b(plane|airplane|aeroplane|aircraft|flight|jet)\b""")
 
   fun isPlaneQuestion(text: String): Boolean = pattern.containsMatchIn(text.lowercase())
+
+  private val pilotOff = Regex("""\b(pilot mode off|pilot off|stop pilot mode|exit pilot mode|end pilot mode|turn off pilot mode)\b""")
+
+  /** "Pilot mode off" and close variants: the voice "off" for pilot mode. */
+  fun isPilotModeOff(text: String): Boolean = pilotOff.containsMatchIn(text.lowercase())
 }

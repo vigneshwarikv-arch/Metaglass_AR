@@ -43,6 +43,7 @@ fun SettingsScreen(
     onDisconnectGlasses: () -> Unit,
     onEnableGlassesMic: () -> Unit,
     sim: SimControls,
+    onOpenPilot: () -> Unit = {},
 ) {
   val s = state.settings
   Column(
@@ -110,6 +111,11 @@ fun SettingsScreen(
     }
 
     SimulatedGlassesSection(s, sim)
+
+    Section("Pilot mode (beta)") {
+      Hint("For VFR pilots: groundspeed, track, GPS altitude, direct-to, and with a Wi-Fi ADS-B receiver (Stratux, Stratus 4) traffic callouts and the nearest airport. A supplementary aid only, not a certified instrument.")
+      Button(onClick = onOpenPilot) { Text("Open pilot mode") }
+    }
 
     Text(
         "${Brand.NAME} · prototype · not affiliated with Meta or Ray-Ban.",
