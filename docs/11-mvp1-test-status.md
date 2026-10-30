@@ -47,3 +47,38 @@ Quick dry run without glasses: **Settings → Simulated glasses** on the iPhone.
 
 - Free route data (adsbdb) is sometimes wrong for a given flight (seen in Chennai: a plane landing at
   MAA was listed as Rajkot → Delhi). Note how often this happens during testing.
+
+---
+
+# Pilot mode (MVP 2) — test status
+
+*Started 31 Oct 2026. Full checklist: [12-pilot-flight-test-checklist.md](12-pilot-flight-test-checklist.md). Safety rules there apply to every test.*
+
+| # | Feature | Android emulator (India) | Android phone | iPhone | Glasses | Real receiver | Flight |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | GS / TRK / GPS ALT (phone GPS) | — (emulator has fixed GPS) | Not yet | Not yet | — | — | Not yet |
+| 2 | Direct-to | ✅ Passed (replay) | Not yet | Not yet | Card ✅ (simulated) | Not yet | Not yet |
+| 3 | Traffic callouts | ✅ Passed (replay + simulated receiver) | Not yet | Not yet | Card ✅ (simulated) | Not yet | Not yet |
+| 4 | Nearest airport | ✅ Passed | Not yet | Not yet | — | Not yet | Not yet |
+| 5 | Receiver status | ✅ Passed (replay) | Not yet | Not yet | — | Not yet | — |
+| — | Disclaimer, OFF, notification "Turn off", "pilot mode off" | ✅ Passed | Not yet | Not yet | Voice off ✅ (simulated) | — | Not yet |
+
+Also verified automatically on every push: GDL 90 decoding (spec examples), callout rules, scenarios and airports — same tests on
+Android and iPhone; the iPhone app build. Emulator screenshots: `design/screenshots/20-28`.
+
+**How the emulator test was run:** `adb emu redir add udp:4000:4000`, then
+`python tools/gdl90-replay/gdl90_replay.py scenario converging` (sends to 127.0.0.1:4000) — the app received it through the real
+Wi-Fi receiver code path. Then Pilot settings → Simulated receiver → "Busy pattern".
+
+### Pilot mode test log
+
+| Date | Who | Device / receiver | Result |
+| --- | --- | --- | --- |
+| 31 Oct 2026 | Claude (India) | Android emulator (API 36) + replay tool + simulated receiver + simulated Ray-Ban Display | Features 2–5, disclaimer and all three "off" controls work. Found and fixed: screen closing itself on open; "pilot mode off" not recognised. |
+
+### Not tested yet (needs the US partner)
+
+- A real Stratux / Stratus 4: connection, GPS altitude datum, traffic compared with ForeFlight, two devices at once.
+- Phone GPS readouts while moving (drive test), and on a real iPhone.
+- Real glasses: card readability in sun, audio over engine noise, "pilot mode off" with noise.
+- Android screen-off behaviour on a real phone (foreground service), battery.
