@@ -43,7 +43,12 @@ jobs:
       - name: Build for iOS Simulator (no signing)
         working-directory: app/ios
         run: |
+          status=0
           xcodebuild -project Planes.xcodeproj -scheme Planes \
             -destination 'generic/platform=iOS Simulator' \
-            CODE_SIGNING_ALLOWED=NO build | tail -n 80
-          exit ${PIPESTATUS[0]}
+            CODE_SIGNING_ALLOWED=NO build > build.log 2>&1 || status=$?
+          tail -n 80 build.log
+          # Compiler errors as annotations, so they show on the pull request without opening the log.
+          grep -E ": error: " build.log | sort -u | head -30 \
+            | sed -E 's#^.*/(app/ios/[^:]+):([0-9]+):[0-9]+: error: (.*)$#::error file=\1,line=\2::\3#' || true
+          exit $status
