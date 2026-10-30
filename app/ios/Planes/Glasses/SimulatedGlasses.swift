@@ -61,6 +61,10 @@ final class SimulatedGlasses {
     glasses?.services.speech.simulateTranscription(text: "what's that plane", isFinal: true, confidence: 1)
   }
 
+  func sayPilotModeOff() {
+    glasses?.services.speech.simulateTranscription(text: "pilot mode off", isFinal: true, confidence: 1)
+  }
+
   func voiceLaunch() {
     _ = glasses?.services.voiceInvocation.sendLaunchAppAction()
   }

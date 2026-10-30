@@ -48,6 +48,7 @@ final class AppModel: ObservableObject {
   @Published var lastAnswer: Answer?
   @Published var simHead = Pointing(bearingDeg: 0, elevationDeg: 15)
   let point = PointState()
+  let pilot = PilotModel()
 
   let glasses = DatGlasses()
   let simulated = SimulatedGlasses()
@@ -81,6 +82,7 @@ final class AppModel: ObservableObject {
 
     glasses.declinationDeg = { [weak self] in self?.locationService.declinationDeg ?? 0 }
     glasses.onAsk = { [weak self] trigger in self?.ask(trigger) }
+    pilot.attach(glasses: glasses, simulated: simulated)
     glasses.start()
     if settings.simulatedGlasses { simulated.enable(settings.simulatedModel) }
 
@@ -216,6 +218,11 @@ final class AppModel: ObservableObject {
   /// "What's that plane?": glasses head direction if available, otherwise the phone's; spoken on the
   /// glasses when connected, otherwise on the iPhone.
   func ask(_ trigger: AskTrigger = .phoneButton) {
+    // In the cockpit the glasses answer with pilot information instead of "what's that plane?".
+    if pilot.active {
+      pilot.speakSummary()
+      return
+    }
     Task {
       let answer: Answer
       if let user = location.point {
