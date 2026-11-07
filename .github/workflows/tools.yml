@@ -1,0 +1,20 @@
+name: Tools
+# Checks the GDL 90 replay tool against the spec examples and the shared scenarios.
+on:
+  push:
+    paths: ['tools/**', 'app/android/data/src/main/resources/gdl90/**', '.github/workflows/tools.yml']
+  pull_request:
+    paths: ['tools/**', 'app/android/data/src/main/resources/gdl90/**', '.github/workflows/tools.yml']
+  workflow_dispatch:
+
+jobs:
+  replay:
+    name: GDL 90 replay selftest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python tools/gdl90-replay/gdl90_replay.py selftest
+      - run: python tools/gdl90-replay/gdl90_replay.py list

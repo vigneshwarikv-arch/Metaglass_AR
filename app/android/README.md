@@ -1,4 +1,4 @@
-# [BrandName] — Android app (MVP 1: "What's that plane?")
+# [BrandName] — Android app (MVP 1: "What's that plane?" + MVP 2 pilot mode)
 
 Kotlin + Jetpack Compose, Gradle (Kotlin DSL). Phone app plus Meta glasses support through the
 Meta Wearables Device Access Toolkit (DAT) 1.0.1.
@@ -8,7 +8,7 @@ Meta Wearables Device Access Toolkit (DAT) 1.0.1.
 | Module | What it is | Android? |
 | --- | --- | --- |
 | `core` | The engine: aircraft model, geometry (distance, bearing, elevation incl. Earth curvature), "which plane am I pointing at?", the spoken sentence and Display card, glasses head-direction maths, connector interfaces | No (pure Kotlin) |
-| `data` | Data connectors: OpenSky (live positions), adsbdb (airline / type / registration / route), sample data (synthetic flights around Chennai and Milpitas), caching + rate-limit back-off | No (pure Kotlin) |
+| `data` | Data connectors: OpenSky (live positions), adsbdb (airline / type / registration / route), sample data (synthetic flights around Chennai and Milpitas), caching + rate-limit back-off; pilot mode: GDL 90 decoder + UDP receiver + simulated receiver, airport list | No (pure Kotlin) |
 | `glasses` | Output connector for Meta glasses (DAT): registration, session, head motion, speech, "Hey Meta" launch, Display card, spoken answer | Yes |
 | `app` | The phone app: Nearby (list + map), Point to identify, Plane details, Settings | Yes |
 
@@ -82,6 +82,41 @@ Meta Ray-Ban Display glasses that the app connects to through the real DAT code 
 
 No Meta account, Meta AI app or Developer Center setup is needed for the simulator. Turn it off before
 connecting real glasses.
+
+## Pilot mode (MVP 2, beta)
+
+**Settings → Pilot mode (beta) → Open pilot mode.** A one-time disclaimer comes first. Pilot mode is a supplementary aid
+only (VFR, daytime), never a primary or certified instrument. Spec and build status: [docs/08](../../docs/08-mvp2-pilot-mode.md).
+
+- **Free (phone GPS):** groundspeed (kt), track (° true), GPS altitude (always labelled GPS), direct-to (search by ICAO,
+  FAA, IATA or name; arrow, NM, ETE).
+- **With a Wi-Fi ADS-B receiver:** spoken + shown traffic callouts ("Traffic, 2 o'clock, 3 miles, 500 above, climbing"),
+  nearest airport, receiver status.
+- **Glasses:** Ray-Ban Display shows a 3-line card; callouts are spoken (Ray-Ban Meta too). Asking the glasses
+  ("Hey Meta, start [BrandName]" or "what's that plane?") speaks a pilot summary while pilot mode is on.
+- **Off:** the red OFF button, the notification's **Turn off**, or say **"pilot mode off"** to the glasses.
+- Pilot mode keeps running with the screen off (a location foreground service with a notification).
+
+### Connect a Stratux or Stratus 4
+
+1. Power on the receiver and wait for its Wi-Fi network (Stratux: `Stratux`, no password by default).
+2. On the phone, join that Wi-Fi. Android may warn "no internet" — choose to stay connected.
+3. Open pilot mode. Within a few seconds the status shows *<name> · connected*, then *receiver GPS OK* outdoors.
+4. Pilot settings → "Listen for a receiver" must be on (default). The app listens for GDL 90 on UDP port 4000.
+
+### Test without a receiver (India)
+
+- **Simulated receiver:** Pilot settings → Simulated receiver → pick a scenario. Turn it off before real use.
+- **Replay tool** (sends real GDL 90 bytes over UDP, through the same code as a real receiver):
+  ```bash
+  adb emu redir add udp:4000:4000          # emulator only, once per emulator start
+  python tools/gdl90-replay/gdl90_replay.py scenario converging
+  ```
+  For a real phone on the same Wi-Fi: `--to <phone IP>:4000`. See [tools/gdl90-replay](../../tools/gdl90-replay/README.md).
+- With **Simulated glasses** on, the pilot screen also shows what the Display shows and a "Say: pilot mode off" button.
+
+Data: airports from [OurAirports](https://ourairports.com/data/) (public domain; credited in the app), bundled in
+`data/src/main/resources/airports/airports.json` (24,069 airports; rebuild with `python tools/airports/build_airports.py`).
 
 ## For the US partner: test build + Meta glasses
 

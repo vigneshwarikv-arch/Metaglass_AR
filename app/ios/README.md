@@ -1,4 +1,4 @@
-# [BrandName] — iPhone app (MVP 1: "What's that plane?")
+# [BrandName] — iPhone app (MVP 1: "What's that plane?" + MVP 2 pilot mode)
 
 SwiftUI app with Meta glasses support through the Meta Wearables Device Access Toolkit (DAT) 1.0.1
 for iOS. Same features and answers as the Android app in `app/android`.
@@ -68,6 +68,21 @@ Never commit `Secrets.xcconfig`.
 **No glasses?** **Settings → Simulated glasses** runs the whole glasses flow with Meta's MockDeviceKit,
 on the iPhone or in the Xcode Simulator.
 
+## Pilot mode (MVP 2, beta)
+
+**Settings → Pilot mode (beta) → Open pilot mode.** Same features, rules and tests as Android — see
+[`app/android/README.md` → Pilot mode](../android/README.md#pilot-mode-mvp-2-beta) and [docs/08](../../docs/08-mvp2-pilot-mode.md).
+iPhone differences:
+
+- **Connect a Stratux / Stratus 4:** join the receiver's Wi-Fi in iOS Settings, open pilot mode, and **allow Local Network**
+  when iOS asks (needed to receive GDL 90 on UDP port 4000).
+- The screen stays on while pilot mode is open. Running in the background (screen off) is not built yet on iPhone.
+- GPS altitude from the iPhone is MSL; from a Stratux it is usually height above the ellipsoid (the screen says which).
+- Receiving *broadcast* UDP on iOS needs an Apple entitlement we don't have; Stratux uses unicast, so it should work.
+  Stratus 4 still to check.
+- **Replay tool:** with the Mac/PC and iPhone on the same Wi-Fi,
+  `python tools/gdl90-replay/gdl90_replay.py scenario converging --to <iPhone IP>:4000`. Or use Pilot settings → Simulated receiver.
+
 ## Tests
 
 ```bash
@@ -78,6 +93,9 @@ GitHub runs these tests and an iPhone build on every push (see the **Actions** t
 breaks the build shows up even if you don't have a Mac at hand.
 
 ## Not verified yet (needs a real iPhone)
+
+Pilot mode has only been built and unit-tested on GitHub's Mac; nobody has run it on an iPhone. See docs/12.
+
 
 The code builds on GitHub's Mac, but nobody has run it on an iPhone yet. Please check especially:
 

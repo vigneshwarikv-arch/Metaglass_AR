@@ -23,6 +23,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.metaglassar.planes.MainViewModel
+import com.metaglassar.planes.ui.pilot.pilotRoutes
 
 private data class Tab(val route: String, val label: String, val icon: ImageVector)
 
@@ -40,6 +41,7 @@ fun AppRoot(
     onConnectGlasses: () -> Unit,
     onDisconnectGlasses: () -> Unit,
     onEnableGlassesMic: () -> Unit,
+    onPilotStarted: () -> Unit,
 ) {
   val state by vm.state.collectAsStateWithLifecycle()
   val nav = rememberNavController()
@@ -49,7 +51,7 @@ fun AppRoot(
   Scaffold(
       containerColor = MaterialTheme.colorScheme.background,
       bottomBar = {
-        if (current?.startsWith("details") != true) {
+        if (current?.startsWith("details") != true && current?.startsWith("pilot") != true) {
           NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
             tabs.forEach { tab ->
               NavigationBarItem(
@@ -70,7 +72,7 @@ fun AppRoot(
       },
   ) { padding ->
     Column(Modifier.padding(padding)) {
-      state.lastAnswer?.let { AnswerBanner(it, onDismiss = vm::dismissAnswer) }
+      if (current?.startsWith("pilot") != true) state.lastAnswer?.let { AnswerBanner(it, onDismiss = vm::dismissAnswer) }
       NavHost(nav, startDestination = "nearby") {
         composable("nearby") {
           NearbyScreen(
@@ -112,8 +114,10 @@ fun AppRoot(
               onConnectGlasses = onConnectGlasses,
               onDisconnectGlasses = onDisconnectGlasses,
               onEnableGlassesMic = onEnableGlassesMic,
+              onOpenPilot = { nav.navigate("pilot") },
           )
         }
+        pilotRoutes(nav, vm, onRequestLocation, onPilotStarted)
         composable("details/{icao24}") { entry ->
           val id = entry.arguments?.getString("icao24").orEmpty()
           DetailsScreen(seen = vm.aircraft(id), state = state, onBack = { nav.popBackStack() })

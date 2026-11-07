@@ -216,6 +216,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
    * head tracking, the phone; then speaks the answer on the glasses (or the phone) and shows it.
    */
   fun ask(trigger: AskTrigger = AskTrigger.PHONE_BUTTON) {
+    // In the cockpit the glasses answer with pilot information instead of "what's that plane?".
+    if (graph.pilot.state.value.active) {
+      graph.pilot.speakSummary()
+      return
+    }
     viewModelScope.launch {
       val s = state.value
       val user = (s.location as? LocationState.Known)?.point
@@ -276,6 +281,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
   fun simSayWhatsThatPlane() = sim.sayWhatsThatPlane()
 
   fun simVoiceLaunch() = sim.voiceLaunch()
+
+  fun simPilotModeOff() = sim.sayPilotModeOff()
 
   fun simDisplayPreview(context: android.content.Context) = sim.displayPreview(context)
 

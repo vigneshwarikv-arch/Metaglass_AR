@@ -13,6 +13,7 @@ import com.metaglassar.planes.glasses.DatGlassesConnector
 import com.metaglassar.planes.glasses.GlassesConnector
 import com.metaglassar.planes.glasses.SimulatedGlasses
 import com.metaglassar.planes.glasses.SpokenOutput
+import com.metaglassar.planes.pilot.PilotRuntime
 
 /** Wires connectors to the engine. One instance for the app's lifetime. */
 class PlanesApp : Application() {
@@ -53,6 +54,9 @@ class AppGraph(app: Application) {
 
   val glasses: GlassesConnector =
       DatGlassesConnector(app, declinationDeg = { lastUserPosition?.let(::declinationAt) ?: 0.0 })
+
+  /** Pilot mode (MVP 2): app-wide so it keeps running with the screen off. */
+  val pilot by lazy { PilotRuntime(app, settings, glasses, { phoneVoice }, location) }
 
   /** Testing without hardware; turned on from Settings and restored at start-up. */
   val simulatedGlasses = SimulatedGlasses(app).also { sim ->

@@ -7,6 +7,9 @@ import PlanesCore
 
 enum AskTrigger { case voiceLaunch, spokenQuestion, phoneButton }
 
+/// Spoken commands other than the plane question.
+enum GlassesCommand { case pilotModeOff }
+
 enum GlassesStatus: Equatable {
   case notRegistered
   case registering
@@ -30,6 +33,8 @@ final class DatGlasses: ObservableObject {
   @Published private(set) var headPointing: Pointing?
 
   var onAsk: ((AskTrigger) -> Void)?
+  /// "Pilot mode off" and other commands (needs the glasses microphone).
+  var onCommand: ((GlassesCommand) -> Void)?
   var declinationDeg: () -> Double = { 0 }
 
   private let voice = Voice()
@@ -206,8 +211,12 @@ final class DatGlasses: ObservableObject {
     guard (try? await Wearables.shared.checkPermissionStatus(.microphone)) == .granted else { return }
     guard let speech = try? s.addSpeech() else { return }
     speech.transcriptionPublisher.listen { [weak self] result in
-      guard result.isFinal, QuestionMatcher.isPlaneQuestion(result.text) else { return }
-      Task { @MainActor in self?.askOnce(.spokenQuestion) }
+      guard result.isFinal else { return }
+      if QuestionMatcher.isPilotModeOff(result.text) {
+        Task { @MainActor in self?.onCommand?(.pilotModeOff) }
+      } else if QuestionMatcher.isPlaneQuestion(result.text) {
+        Task { @MainActor in self?.askOnce(.spokenQuestion) }
+      }
     }.store(in: tokens)
     speech.start()
     listening = true
@@ -255,11 +264,20 @@ final class DatGlasses: ObservableObject {
   // MARK: Output
 
   func deliver(_ answer: Answer) async {
-    if let d = display, displayReady, let card = answer.card {
-      try? await DisplayCard.send(card, to: d)
-    }
-    await voice.speak(answer.spoken)
+    if let card = answer.card { await showCard(card) }
+    await speak(answer.spoken)
   }
+
+  /// Shows a card on Ray-Ban Display without speaking (same DisplayCard as MVP 1 answers); no-op without a display.
+  func showCard(_ card: AnswerCard) async {
+    guard let d = display, displayReady else { return }
+    try? await DisplayCard.send(card, to: d)
+  }
+
+  /// Speaks through the glasses' speakers while they are connected.
+  func speak(_ text: String) async { await voice.speak(text) }
+
+  var hasDisplay: Bool { displayReady }
 }
 
 /// Recognises "what's that plane?" and close variants in a transcript.
@@ -267,5 +285,11 @@ enum QuestionMatcher {
   static func isPlaneQuestion(_ text: String) -> Bool {
     text.lowercased().range(
       of: #"\b(what|which|whats|what's)\b.{0,12}\b(plane|airplane|aeroplane|aircraft|flight|jet)\b"#, options: .regularExpression) != nil
+  }
+
+  /// "Pilot mode off" and close variants: the voice "off" for pilot mode.
+  static func isPilotModeOff(_ text: String) -> Bool {
+    text.lowercased().range(
+      of: #"\b(pilot mode off|pilot off|stop pilot mode|exit pilot mode|end pilot mode|turn off pilot mode)\b"#, options: .regularExpression) != nil
   }
 }

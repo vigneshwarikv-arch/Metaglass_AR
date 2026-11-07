@@ -5,6 +5,12 @@ public struct AnswerCard: Equatable, Sendable {
   public var title: String
   public var route: String?
   public var meta: String?
+
+  public init(title: String, route: String?, meta: String?) {
+    self.title = title
+    self.route = route
+    self.meta = meta
+  }
 }
 
 /// What an output connector delivers: one short spoken sentence, plus an optional card.

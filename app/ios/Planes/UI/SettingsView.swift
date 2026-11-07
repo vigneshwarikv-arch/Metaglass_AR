@@ -3,6 +3,7 @@ import SwiftUI
 
 struct SettingsView: View {
   @EnvironmentObject var model: AppModel
+  @State private var showPilot = false
 
   var body: some View {
     Form {
@@ -59,9 +60,19 @@ struct SettingsView: View {
 
       SimulatedGlassesSection()
 
+      Section("Pilot mode (beta)") {
+        Text("For VFR pilots: groundspeed, track, GPS altitude, direct-to, and with a Wi-Fi ADS-B receiver (Stratux, Stratus 4) traffic callouts and the nearest airport. A supplementary aid only, not a certified instrument.")
+          .font(.footnote).foregroundStyle(.secondary)
+        Button("Open pilot mode") { showPilot = true }
+      }
+
       Text("\(Brand.name) · prototype · not affiliated with Meta or Ray-Ban.").font(.caption2).foregroundStyle(.secondary)
     }
     .navigationTitle("Settings")
+    .fullScreenCover(isPresented: $showPilot) {
+      PilotRootView(pilot: model.pilot, simulated: model.simulated, simulatedGlassesOn: model.settings.simulatedGlasses,
+        simulatedModel: model.settings.simulatedModel)
+    }
   }
 
   private var statusText: String {

@@ -59,7 +59,7 @@
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Used to connect to your Meta glasses.</string>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>Lets your iPhone find and connect to your Meta glasses over Wi-Fi.</string>
+	<string>Lets your iPhone connect to your Meta glasses and, in pilot mode, receive traffic from your Wi-Fi ADS-B receiver (Stratux, Stratus 4).</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_bonjour._tcp</string>

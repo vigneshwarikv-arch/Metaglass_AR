@@ -35,6 +35,9 @@ class MainActivity : ComponentActivity() {
         }
       }
 
+  /** Pilot mode: notification for the foreground service (Android 13+). Pilot mode works without it. */
+  private val notificationPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { _ -> }
+
   /** Glasses microphone (opens the Meta AI app); only launched from a user tap. */
   private val glassesMicPermission =
       registerForActivityResult(Wearables.RequestPermissionContract()) { _ -> glasses.onPermissionsChanged() }
@@ -71,6 +74,11 @@ class MainActivity : ComponentActivity() {
             },
             onDisconnectGlasses = { glasses.startUnregistration(this) },
             onEnableGlassesMic = { glassesMicPermission.launch(Permission.MICROPHONE) },
+            onPilotStarted = {
+              if (android.os.Build.VERSION.SDK_INT >= 33 && !granted(Manifest.permission.POST_NOTIFICATIONS)) {
+                notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+              }
+            },
         )
       }
     }

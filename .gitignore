@@ -8,3 +8,7 @@ build/
 DerivedData/
 *.xcuserstate
 local.properties
+
+# Python
+__pycache__/
+*.pyc

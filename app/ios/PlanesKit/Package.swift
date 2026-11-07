@@ -12,9 +12,11 @@ let package = Package(
   ],
   targets: [
     .target(name: "PlanesCore"),
-    // flights.json is a copy of app/android/data/src/main/resources/sample/flights.json;
-    // CI fails if the two drift apart.
-    .target(name: "PlanesData", dependencies: ["PlanesCore"], resources: [.copy("Resources/flights.json")]),
+    // flights.json, scenarios.json and airports.json are copies of the files in
+    // app/android/data/src/main/resources/; CI fails if they drift apart.
+    .target(
+      name: "PlanesData", dependencies: ["PlanesCore"],
+      resources: [.copy("Resources/flights.json"), .copy("Resources/scenarios.json"), .copy("Resources/airports.json")]),
     .testTarget(name: "PlanesCoreTests", dependencies: ["PlanesCore"]),
     .testTarget(name: "PlanesDataTests", dependencies: ["PlanesData"]),
   ]

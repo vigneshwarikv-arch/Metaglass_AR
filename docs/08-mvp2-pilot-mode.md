@@ -1,6 +1,33 @@
 # 08 — MVP 2: Pilot Mode
 
-*Status: **proposed scope**, second product. Replaces the earlier [03-mvp-features.md](03-mvp-features.md), which is kept for history.*
+*Status: **proposed scope**, second product; **Phase 1 built** on branch `mvp2` (Oct 2026), not yet flight-tested. Replaces the earlier [03-mvp-features.md](03-mvp-features.md), which is kept for history.*
+
+## Phase 1 build status (Oct 2026)
+
+| Feature | Status | Notes |
+| --- | --- | --- |
+| Groundspeed, track (true), GPS altitude | *proposed → built* | Phone GPS (smoothed), or the receiver's ownship when it has a fix. Altitude always labelled GPS; the screen says whether it is MSL or height above the WGS-84 ellipsoid (Stratux sends ellipsoid height). |
+| Direct-to | *proposed → built* | Search by ICAO, FAA, IATA or name; arrow (track-up), distance NM, ETE, bearing, "turn left/right". |
+| Traffic callouts (shown + spoken) | *proposed → built* | "Traffic, 2 o'clock, 3 miles, 500 above, climbing." Rules below. |
+| Nearest airport, always on | *proposed → built* | With a receiver connected. |
+| Receiver status | *proposed → built* | Connected / no data / receiver GPS vs phone GPS. |
+| Meta glasses | *proposed → built* | Ray-Ban Display: 3-line card (GS · TRK · GPS ALT, direct-to, one traffic alert). Ray-Ban Meta: spoken callouts. "Pilot mode off" by voice. Tested with simulated glasses only. |
+| Disclaimer, one-tap off | *built* | One-time disclaimer; OFF button, notification "Turn off" (Android), voice "pilot mode off". |
+| Testing without flying | *built* | `tools/gdl90-replay` and an in-app simulated receiver, same three scenarios. |
+| Paid gating | *decided for Phase 1* | No payments: traffic and nearest airport unlock whenever a receiver is connected. |
+| Background running | *decided for Phase 1* | Android: foreground service (callouts continue with the screen off). iPhone: screen kept on while pilot mode is open; background location later. |
+
+**Traffic callout rules (built, both apps, same tests):** traffic within 5 NM and ±2,000 ft (adjustable in Settings), airborne only;
+clock position relative to our track (compass direction when we have no track); distance in whole miles ("less than 1 mile" under 1 NM);
+relative altitude to the nearest 100 ft, "same altitude" within 200 ft, "altitude unknown" when missing; "climbing/descending" above 500 fpm.
+Converging traffic first, then nearest. One callout at a time, at least 8 s apart; the same aircraft again only after 15 s and when it is
+30 % or 1 NM closer. Ownship is never called out (same ICAO address, or within 0.1 NM and 300 ft — e.g. a TIS-B "shadow").
+Traffic altitude is pressure altitude; it is compared with ownship pressure altitude from the receiver (or GPS altitude as a fallback).
+
+**Receiver notes:** GDL 90 per Garmin 560-1058-00 Rev A (heartbeat, ownship, ownship geometric altitude, traffic) plus the ForeFlight ID
+message. Stratux sends UDP unicast to each Wi-Fi client, so ForeFlight on an iPad and this app on a phone should both work; two GDL 90 apps on
+the *same* phone are not reliable (a unicast datagram reaches only one app). To be confirmed with real hardware — see
+[12-pilot-flight-test-checklist.md](12-pilot-flight-test-checklist.md).
 
 ## One-line pitch
 
